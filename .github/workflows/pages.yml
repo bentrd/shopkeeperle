@@ -45,10 +45,18 @@ jobs:
   deploy:
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.retry.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
     steps:
       - name: Publish GitHub Pages
         id: deployment
+        uses: actions/deploy-pages@v5
+        continue-on-error: true
+      - name: Wait before retrying a failed Pages publication
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 15
+      - name: Retry GitHub Pages publication
+        if: steps.deployment.outcome == 'failure'
+        id: retry
         uses: actions/deploy-pages@v5
