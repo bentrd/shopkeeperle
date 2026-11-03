@@ -1,0 +1,10 @@
+import { cp, mkdir, rm, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const dist = path.join(root, 'dist');
+await rm(dist, { recursive: true, force: true });
+await mkdir(dist, { recursive: true });
+for (const file of ['index.html', 'style.css', 'keeper.css', 'app.js', 'game.js', 'catalog.js', 'keeper.js', 'assets', 'data']) await cp(path.join(root, file), path.join(dist, file), { recursive: true });
+await writeFile(path.join(dist, '.nojekyll'), '');
+console.log('Built static site in dist/');

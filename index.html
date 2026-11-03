@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#081416">
+  <meta name="description" content="Guess a League item. Read its recipe’s green and orange clues. Find the mystery build in six tries. Daily and unlimited play.">
+  <meta property="og:title" content="Shopkeeperle — Know your build?">
+  <meta property="og:description" content="One recipe. Six guesses. A little shop knowledge goes a long way.">
+  <title>Shopkeeperle — Know your build?</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
+  <link rel="preconnect" href="https://ddragon.leagueoflegends.com">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./keeper.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <div class="ambient" aria-hidden="true"></div>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="Shopkeeperle home"><span class="brand-mark" aria-hidden="true">S</span><span>SHOPKEEPER<span class="brand-tail">LE</span><small>A LEAGUE ITEM GUESSING GAME</small></span></a>
+    <div class="header-actions"><span class="patch"><i></i><span id="patch-label">Opening shop…</span></span><button class="icon-button" id="stats-button" aria-label="Your stats" title="Your stats"><svg viewBox="0 0 24 24"><path d="M5 20V11m7 9V4m7 16v-6"/></svg></button><button class="icon-button" id="help-button" aria-label="How to play" title="How to play">?</button></div>
+  </header>
+
+  <main class="shell">
+    <section class="intro" aria-label="Game mode">
+      <div><div class="eyebrow"><span class="tiny-diamond"></span> SUMMONER’S RIFT · ITEM SHOP</div><h1>Know your build?</h1><p>Guess an item. Read the colours. Find the recipe.</p></div>
+      <div class="mode-switch" aria-label="Choose game mode"><button id="daily-mode" aria-pressed="true"><svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="15" rx="1"/><path d="M8 3v6m8-6v6M4 12h16"/></svg>Daily</button><button id="unlimited-mode" aria-pressed="false"><span class="infinity">∞</span>Unlimited</button></div>
+    </section>
+
+    <div id="load-error" class="load-error" hidden role="alert"></div>
+    <section class="shop-frame" aria-label="Recipe guessing game" aria-busy="true" id="game">
+      <div class="recipe-layout">
+        <aside class="keeper-scene" aria-label="The shopkeeper">
+          <div class="scene-rune" aria-hidden="true"></div><div class="scene-light" aria-hidden="true"></div>
+          <div class="keeper-caption"><span class="eyebrow">YOUR FRIENDLY NEIGHBOURHOOD</span><h2>Shopkeeper</h2></div>
+          <img class="keeper" src="./assets/shopkeeper-user.png" alt="The smiling League shopkeeper, ready with a backpack full of weapons" fetchpriority="high">
+          <button id="quote-button" class="speech-bubble" title="Chat with the shopkeeper"><span id="quote">“What are we building today?”</span><small>THE SHOPKEEPER <span aria-hidden="true">↻</span></small></button>
+          <div class="scene-ground" aria-hidden="true"></div>
+        </aside>
+
+        <div class="recipe-board">
+          <div class="board-heading"><span class="eyebrow" id="puzzle-label">TODAY’S RECIPE</span><span class="board-date" id="puzzle-date"></span></div>
+          <div class="mystery" id="mystery"><span class="mystery-inner" aria-label="Mystery item">?</span><span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span></div>
+          <h2 id="answer-heading">Name the mystery item</h2><p id="recipe-subtitle" class="recipe-subtitle">Guess an item to inspect its recipe.</p>
+          <div class="recipe-connector" aria-hidden="true"><span></span></div>
+          <div class="ingredients" id="ingredients"><span class="loading">Unpacking the wares…</span></div>
+          <div class="combine-cost"><span class="coin" aria-hidden="true"></span><span id="combine-cost">—</span><span id="cost-caption">gold</span></div>
+          <div class="color-key"><span><i class="green"></i>Right slot</span><span><i class="orange"></i>Wrong slot</span><span><i class="grey"></i>Not in recipe</span></div>
+          <div class="board-bottom"><span id="attempt-label">6 guesses remaining</span><div class="attempts" id="attempts" aria-label="Six attempts"></div><button class="text-button" id="hint-button">Need a hint?</button></div>
+          <div class="hint" id="hint" hidden></div>
+        </div>
+      </div>
+
+      <section class="purchase-panel" aria-label="Choose an item" id="purchase-panel">
+        <div class="purchase-heading"><h2><span class="tiny-diamond"></span> Make your purchase</h2><span id="item-count">THE ITEM SHOP</span></div>
+        <form id="guess-form" class="guess-form" autocomplete="off"><div class="search-wrap"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><label for="item-search" class="sr-only">Search items</label><input id="item-search" type="search" placeholder="Search for an item…" maxlength="80" aria-describedby="selection-label"><kbd aria-hidden="true">/</kbd></div><button class="gold-button" id="guess-button" disabled type="submit">Buy guess <span aria-hidden="true">→</span></button></form>
+        <div class="selection-line"><span id="selection-label">Select an item below, then buy your guess.</span><div class="filter-tabs" aria-label="Filter item shop"><button data-filter="all" aria-pressed="true">All</button><button data-filter="Damage" aria-pressed="false">Attack</button><button data-filter="SpellDamage" aria-pressed="false">Magic</button><button data-filter="defense" aria-pressed="false">Defence</button></div></div>
+        <div id="item-grid" class="item-grid" aria-label="Available items"></div>
+        <p class="form-message" id="form-message" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="result-panel" id="result-panel" hidden aria-live="polite"></section>
+    </section>
+
+    <section class="guess-history" id="history-section" hidden><div class="history-heading"><h2>Your purchases</h2><span>GREEN = RIGHT SLOT · ORANGE = WRONG SLOT</span></div><ol id="history"></ol></section>
+    <div class="under-shop"><span><span class="tiny-diamond"></span><span id="reset-label">New stock every day at 00:00 UTC</span></span><button class="text-button" id="about-button">Data & credits <span aria-hidden="true">↗</span></button></div>
+  </main>
+
+  <footer><span>Made for the love of the shop.</span><p>Shopkeeperle was created under Riot Games’ <a href="https://www.riotgames.com/en/legal" target="_blank" rel="noreferrer">“Legal Jibber Jabber” policy</a> using assets owned by Riot Games. Riot Games does not endorse or sponsor this project.</p></footer>
+  <dialog id="modal"><button class="icon-button modal-close" aria-label="Close dialog">×</button><div id="modal-content"></div></dialog>
+  <div class="toast" id="toast" role="status" hidden></div>
+</body>
+</html>

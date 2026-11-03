@@ -1,0 +1,54 @@
+name: Refresh items & deploy
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '17 */3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: shopkeeperle-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - name: Refresh Riot catalog and prepare daily stock
+        run: npm run update-data
+      - name: Test game and catalog
+        run: npm test
+      - name: Preserve new patches and daily recipes
+        run: |
+          git add data/
+          if ! git diff --cached --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'Refresh Riot item data and daily stock'
+            git push
+          fi
+      - name: Build static site
+        run: npm run build
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Publish GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

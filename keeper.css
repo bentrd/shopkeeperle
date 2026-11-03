@@ -1,0 +1,73 @@
+/* The original transparent illustration stays intact; only CSS layers move. */
+.keeper-scene .keeper-rig {
+  --keeper-look: 0deg;
+  --keeper-look-y: 0px;
+  position: absolute;
+  inset: auto auto var(--keeper-bottom, 0px) 50%;
+  width: auto;
+  height: calc(100% - var(--keeper-top-clearance, 22px));
+  max-height: var(--keeper-max-height, 310px);
+  aspect-ratio: 725 / 1005;
+  transform: translateX(-50%);
+  transform-origin: 50% 100%;
+  filter: drop-shadow(0 10px 15px #0008);
+  pointer-events: none;
+  z-index: 1;
+}
+.keeper-pose { position: relative; width: 100%; height: 100%; transform-origin: 50% 100%; animation: keeper-breathe 5.2s ease-in-out infinite; transition: filter 180ms ease, rotate 220ms ease; }
+.keeper-rig[data-hover=true] .keeper-pose, .keeper-rig:has(.keeper-hit:focus-visible) .keeper-pose {
+  filter: drop-shadow(0 0 1px #f5d78fe6) drop-shadow(0 0 7px #d2ae5f70);
+  rotate: -.3deg;
+}
+.keeper-rig .keeper-hit {
+  position: absolute; inset: 0; z-index: 3; width: 100%; height: 100%;
+  appearance: none; background: transparent; border: 0; border-radius: 0; padding: 0;
+  pointer-events: auto; cursor: pointer; outline: none;
+  clip-path: polygon(62% 1%,69% 1%,69% 6%,64% 11%,66% 17%,83% 20%,87% 29%,96% 27%,98% 33%,94% 36%,97% 42%,96% 53%,99% 61%,93% 72%,79% 75%,64% 78%,60% 83%,62% 95%,57% 99%,51% 97%,47% 88%,39% 83%,26% 81%,19% 86%,3% 89%,1% 86%,14% 80%,17% 74%,12% 66%,8% 58%,2% 55%,2% 47%,5% 43%,15% 35%,13% 31%,15% 27%,21% 24%,24% 20%,22% 16%,19% 16%,21% 10%,25% 15%,24% 20%,33% 22%,44% 21%,53% 19%,56% 12%,54% 11%,55% 9%,60% 6%);
+}
+.keeper-rig .keeper-body, .keeper-rig .keeper-head { position: absolute; inset: 0; display: block; width: 100%; height: 100%; max-width: none; object-fit: contain; filter: none; }
+/* A precisely shared head contour avoids a second visible face underneath. */
+.keeper-body {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 725 1005'%3E%3Crect width='725' height='1005' fill='white'/%3E%3Cpath d='M242 251L271 225L342 219L389 227L418 248L414 277L439 308L447 338L435 359L415 374L408 420L388 456L355 482L323 494L317 475L349 446L366 401L360 372L322 370L296 382L265 373L236 352L224 320L205 326L185 354L161 389L137 413L123 406L131 367L146 329L179 300L218 285L235 265Z' fill='black'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 725 1005'%3E%3Crect width='725' height='1005' fill='white'/%3E%3Cpath d='M242 251L271 225L342 219L389 227L418 248L414 277L439 308L447 338L435 359L415 374L408 420L388 456L355 482L323 494L317 475L349 446L366 401L360 372L322 370L296 382L265 373L236 352L224 320L205 326L185 354L161 389L137 413L123 406L131 367L146 329L179 300L218 285L235 265Z' fill='black'/%3E%3C/svg%3E");
+  -webkit-mask-size: 100% 100%; mask-size: 100% 100%; mask-mode: luminance;
+}
+.keeper-head {
+  clip-path: polygon(33.38% 24.98%,37.38% 22.39%,47.17% 21.79%,53.66% 22.59%,57.66% 24.68%,57.10% 27.56%,60.55% 30.65%,61.66% 33.63%,60% 35.72%,57.24% 37.21%,56.28% 41.79%,53.52% 45.37%,48.97% 47.96%,44.55% 49.15%,43.72% 47.26%,48.14% 44.38%,50.48% 39.90%,49.66% 37.01%,44.41% 36.82%,40.83% 38.01%,36.55% 37.11%,32.55% 35.02%,30.90% 31.84%,28.28% 32.44%,25.52% 35.22%,22.21% 38.71%,18.90% 41.09%,16.97% 40.40%,18.07% 36.52%,20.14% 32.74%,24.69% 29.85%,30.07% 28.36%,32.41% 26.37%);
+  transform-origin: 46% 38%;
+  transform: translateY(var(--keeper-look-y)) rotate(var(--keeper-look));
+}
+.keeper-spark { position: absolute; color: #f5d78f; font-size: 20px; line-height: 1; opacity: 0; text-shadow: 0 0 12px #d2b06b80; }
+.keeper-spark-0 { left: 17%; top: 23%; }
+.keeper-spark-1 { right: 4%; top: 34%; font-size: 15px; }
+.keeper-spark-2 { right: 25%; top: 12%; font-size: 12px; }
+.keeper-rig[data-reaction=success] .keeper-pose { animation: keeper-celebrate 900ms ease-out; }
+.keeper-rig[data-reaction=success] .keeper-head { animation: keeper-nod 750ms ease-in-out; }
+.keeper-rig[data-reaction=success] .keeper-spark { animation: keeper-twinkle 1s ease-out; }
+.keeper-rig[data-reaction=success] .keeper-spark-1 { animation-delay: 100ms; }
+.keeper-rig[data-reaction=success] .keeper-spark-2 { animation-delay: 200ms; }
+.keeper-rig[data-reaction=miss] .keeper-head { animation: keeper-shake 650ms ease-in-out; }
+.keeper-rig[data-reaction=chat] .keeper-head { animation: keeper-chat 650ms ease-in-out; }
+@keyframes keeper-breathe { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(1.0025); } }
+@keyframes keeper-celebrate { 0%,100% { transform: scaleY(1); } 25%,65% { transform: scaleY(1.003); } 45%,80% { transform: scaleY(1); } }
+@keyframes keeper-nod { 0%,100% { transform: translateY(var(--keeper-look-y)) rotate(var(--keeper-look)); } 25%,65% { transform: translateY(2px) rotate(1.7deg); } 45%,80% { transform: translateY(-1px) rotate(-1deg); } }
+@keyframes keeper-shake { 0%,100% { transform: translateY(var(--keeper-look-y)) rotate(var(--keeper-look)); } 20%,60% { transform: rotate(-1.9deg); } 40%,80% { transform: rotate(1.9deg); } }
+@keyframes keeper-chat { 0%,100% { transform: translateY(var(--keeper-look-y)) rotate(var(--keeper-look)); } 28% { transform: translateY(-1px) rotate(-1.8deg); } 62% { transform: translateY(1px) rotate(1deg); } }
+@keyframes keeper-twinkle { 0%,100% { opacity: 0; transform: translateY(3px) scale(.4); } 30% { opacity: 1; transform: translateY(-3px) scale(1); } 75% { opacity: .6; transform: translateY(-15px) scale(.65); } }
+@media (max-width: 760px) and (min-width: 421px) {
+  .keeper-scene .keeper-rig { height: 260px; max-height: calc(100% - 28px); }
+}
+@media (max-width: 420px) {
+  .keeper-scene .keeper-rig { height: 230px; max-height: none; width: calc(230px * 725 / 1005); bottom: -65px; left: auto; right: 6px; top: auto; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .keeper-rig *, .keeper-rig[data-reaction] * { animation: none !important; transition: none !important; }
+  .keeper-rig .keeper-head { transform: none !important; }
+  .keeper-rig .keeper-pose { rotate: none !important; }
+  .keeper-rig .keeper-spark { display: none; }
+}
+
+@supports not (mask-mode: luminance) {
+  .keeper-rig .keeper-body { -webkit-mask-image: none; mask-image: none; }
+  .keeper-rig .keeper-head { display: none; }
+}
