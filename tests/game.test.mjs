@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MAX_GUESSES, utcDate, millisecondsUntilReset, dailyAnswerId, randomAnswerId, searchItems, scoreRecipeSlots, compareGuess, createPuzzle, puzzleStatus, makeGuess, serializePuzzle, restorePuzzle, dailyStats } from '../game.js';
+import { MAX_GUESSES, utcDate, millisecondsUntilReset, dailyAnswerId, randomAnswerId, searchItems, getGuessRecipe, scoreRecipeComponents, compareGuess, createPuzzle, puzzleStatus, makeGuess, serializePuzzle, restorePuzzle, dailyStats } from '../game.js';
 
 const catalog = {
   version: '16.22.1',
@@ -33,33 +33,75 @@ test('shared recipe feedback counts duplicate components only as often as presen
   assert.equal(feedback.sharedCount, 2);
   assert.equal(feedback.componentCount, 3);
   assert.equal(feedback.goldDirection, 'lower');
-  assert.deepEqual(feedback.slotColors, ['green', 'grey', 'green']);
+  assert.deepEqual(feedback.slotColors, ['green', 'green', 'grey']);
   assert.equal(compareGuess(catalog, '100', '100').correct, true);
 });
 
-test('positional recipe feedback distinguishes exact, misplaced, and absent components', () => {
-  assert.deepEqual(scoreRecipeSlots(['1', '2', '3'], ['1', '3', '4']), ['green', 'orange', 'grey']);
-  assert.deepEqual(scoreRecipeSlots(['1', '2'], ['2', '1']), ['orange', 'orange']);
-  assert.deepEqual(scoreRecipeSlots(['1', '2'], [1, 2]), ['green', 'green']);
+const craftingCatalog = {
+  version: '16.22.1',
+  answers: ['3814', '9001', '9003', '9010'],
+  items: Object.fromEntries([
+    ['1036', 'Long Sword', []], ['1028', 'Ruby Crystal', []],
+    ['3134', 'Serrated Dirk', ['1036', '1036']],
+    ['2021', 'Tunneler', ['1036', '1028']],
+    ['3133', "Caulfield's Warhammer", ['1036', '1036']],
+    ['3814', 'Edge of Night', ['3134', '2021']],
+    ['9001', 'Simple Target', ['1036']],
+    ['9002', 'Upgrade Probe', ['3134']],
+    ['9003', 'Duplicate Target', ['3134', '3134']],
+    ['9004', 'Duplicate Probe', ['3134', '3134', '3134']],
+    ['9005', 'Mixed Probe', ['1036', '3134', '1036']],
+    ['9006', 'Sibling Probe', ['3133']],
+    ['9007', 'Reordered Probe', ['2021', '3134']],
+    ['9010', 'Cyclic Target', ['9011']],
+    ['9011', 'Cycle A', ['9012']], ['9012', 'Cycle B', ['9011']],
+  ].map(([id, name, recipe]) => [id, { id, name, recipe, gold: { total: 1000, combine: 100 } }])),
+};
+
+test('Long Sword is orange when the hidden recipe contains Serrated Dirk', () => {
+  assert.deepEqual(getGuessRecipe(craftingCatalog, '1036'), ['1036']);
+  assert.deepEqual(scoreRecipeComponents(craftingCatalog, '3814', '1036'), ['orange']);
+  assert.deepEqual(compareGuess(craftingCatalog, '3814', '1036').slotColors, ['orange']);
 });
 
-test('slot feedback reserves greens before allocating duplicate oranges', () => {
-  assert.deepEqual(scoreRecipeSlots(['1', '2', '1'], ['1', '1', '1']), ['green', 'grey', 'green']);
-  assert.deepEqual(scoreRecipeSlots(['1', '2', '1'], ['2', '1', '1']), ['orange', 'orange', 'green']);
-  assert.deepEqual(scoreRecipeSlots(['1', '2', '3'], ['2', '2', '2']), ['grey', 'green', 'grey']);
-  assert.deepEqual(scoreRecipeSlots(['1', '1', '3'], ['2', '3', '1']), ['grey', 'orange', 'orange']);
+test('direct ingredient matches are green regardless of recipe order', () => {
+  assert.deepEqual(scoreRecipeComponents(craftingCatalog, '3814', '9007'), ['green', 'green']);
+  assert.deepEqual(scoreRecipeComponents(catalog, '100', '101'), ['green', 'green', 'grey']);
 });
 
-test('slot feedback handles different recipe sizes without changing inputs', () => {
-  const target = ['1', '2', '3'];
-  const guess = ['3'];
-  assert.deepEqual(scoreRecipeSlots(target, guess), ['orange']);
-  assert.deepEqual(scoreRecipeSlots(['1'], ['1', '1', '2', '3']), ['green', 'grey', 'grey', 'grey']);
-  assert.deepEqual(scoreRecipeSlots([], ['1']), ['grey']);
-  assert.deepEqual(scoreRecipeSlots(target, []), []);
-  assert.deepEqual(scoreRecipeSlots(['1', null, '2'], [null, null, '2', undefined]), ['grey', 'grey', 'green', 'grey']);
-  assert.deepEqual(target, ['1', '2', '3']);
-  assert.deepEqual(guess, ['3']);
+test('green duplicate allocation is capped by exact target quantities', () => {
+  assert.deepEqual(scoreRecipeComponents(craftingCatalog, '9003', '9004'), ['green', 'green', 'grey']);
+  assert.deepEqual(scoreRecipeComponents(craftingCatalog, '3814', '9005'), ['orange', 'green', 'orange']);
+});
+
+test('orange recognizes upgrades and recursive subcomponents, even beyond a green match', () => {
+  assert.deepEqual(scoreRecipeComponents(craftingCatalog, '9001', '9002'), ['orange']);
+  const deep = { ...craftingCatalog, items: { ...craftingCatalog.items,
+    '9013': { id: '9013', name: 'Deep Target', recipe: ['3814'], gold: { total: 2000, combine: 100 } },
+  } };
+  assert.deepEqual(scoreRecipeComponents(deep, '9013', '1036'), ['orange']);
+});
+
+test('siblings that only share a leaf component remain grey', () => {
+  assert.deepEqual(scoreRecipeComponents(craftingCatalog, '3814', '9006'), ['grey']);
+});
+
+test('crafting cycles terminate and leave unrelated components grey', () => {
+  assert.deepEqual(scoreRecipeComponents(craftingCatalog, '9010', '1036'), ['grey']);
+  const cycleProbe = { ...craftingCatalog, items: { ...craftingCatalog.items,
+    '9014': { id: '9014', name: 'Cycle Probe', recipe: ['9012'], gold: { total: 2000, combine: 100 } },
+  } };
+  assert.deepEqual(scoreRecipeComponents(cycleProbe, '9010', '9014'), ['orange']);
+});
+
+test('basic items are searchable, valid guesses, and survive save restore', () => {
+  assert.equal(searchItems(craftingCatalog, 'long sword')[0].id, '1036');
+  const state = createPuzzle({ catalog: craftingCatalog, answerId: '3814', date: '2026-11-03' });
+  const next = makeGuess(state, '1036', craftingCatalog);
+  assert.deepEqual(next.guesses, ['1036']);
+  assert.deepEqual(restorePuzzle(serializePuzzle(next), craftingCatalog), next);
+  assert.throws(() => createPuzzle({ catalog: craftingCatalog, answerId: '1036' }), /Unknown answer/);
+  assert.throws(() => makeGuess(state, 'missing', craftingCatalog), /Choose an item/);
 });
 
 test('items with the same visible recipe and combine cost are accepted fairly', () => {

@@ -1,4 +1,4 @@
-import { MAX_GUESSES, utcDate, millisecondsUntilReset, randomAnswerId, normalizeSearch, searchItems, compareGuess, createPuzzle, puzzleStatus, makeGuess, useHint, serializePuzzle, restorePuzzle, dailyStats } from './game.js';
+import { MAX_GUESSES, utcDate, millisecondsUntilReset, randomAnswerId, normalizeSearch, searchItems, getGuessRecipe, compareGuess, createPuzzle, puzzleStatus, makeGuess, useHint, serializePuzzle, restorePuzzle, dailyStats } from './game.js';
 import { buildCatalog, VERSIONS_URL } from './catalog.js';
 import { initShopkeeper } from './keeper.js';
 
@@ -116,15 +116,14 @@ function render() {
   $('.mystery-inner').setAttribute('aria-label', finished ? displayed.name : 'Mystery item');
   $('#answer-heading').textContent = finished ? displayed.name : last ? `Your guess: ${last.name}` : 'Name the mystery item';
   $('#recipe-subtitle').textContent = finished ? (status === 'won' ? 'That’s a build worth buying.' : 'Here’s what was on the shopping list.') : last ? 'Use these colours to plan your next guess.' : 'Guess an item to inspect its recipe.';
-  if (!finished && last && lastFeedback.slotColors.every(color => color === 'green')) $('#recipe-subtitle').textContent = last.recipe.length === answer.recipe.length ? 'Right ingredients. Keep an eye on the gold cost.' : 'A good start. There’s more to this recipe.';
+  if (!finished && last && lastFeedback.slotColors.every(color => color === 'green')) $('#recipe-subtitle').textContent = getGuessRecipe(catalog, lastId).length === answer.recipe.length ? 'Right ingredients. Keep an eye on the gold cost.' : 'A good start. There’s more to this recipe.';
   const recipeItem = finished ? displayed : last;
-  const maxSlots = Math.max(...catalog.answers.map(id => catalog.items[id].recipe.length));
-  $('#ingredients').innerHTML = Array.from({length:maxSlots}, (_, index) => {
-    const id = recipeItem?.recipe[index];
-    if (!id) return `<div class="ingredient unknown"><div class="empty-slot" aria-label="${last || finished ? 'No ingredient in this slot' : 'Hidden recipe slot'}">${last || finished ? '—' : '?'}</div><span>${last || finished ? 'Empty slot' : 'Unknown'}</span></div>`;
+  const shownRecipe = recipeItem ? getGuessRecipe(catalog, recipeItem.id) : [null, null, null];
+  $('#ingredients').innerHTML = shownRecipe.map((id, index) => {
+    if (!id) return '<div class="ingredient unknown"><div class="empty-slot" aria-label="Hidden ingredient">?</div><span>Unknown</span></div>';
     const item = catalog.items[id];
     const color = finished ? 'green' : lastFeedback.slotColors[index];
-    const label = color === 'green' ? 'Right slot' : color === 'orange' ? 'Wrong slot' : 'Not in recipe';
+    const label = color === 'green' ? 'Direct ingredient' : color === 'orange' ? 'Related crafting branch' : 'Not in recipe';
     return `<div class="ingredient ${color}" title="${escape(item.name)}: ${label}"><div class="colored-slot">${itemImage(item)}<b aria-label="${label}">${color === 'green' ? '✓' : color === 'orange' ? '↔' : '×'}</b></div><span>${escape(item.name)}</span></div>`;
   }).join('');
   $('#combine-cost').textContent = recipeItem ? recipeItem.gold.total.toLocaleString('en-US') : '???';
@@ -170,7 +169,7 @@ function renderHistory() {
     const item = catalog.items[id], feedback = compareGuess(catalog, state.answerId, id);
     const direction = feedback.goldDirection;
     const priceLabel = direction === 'equal' ? 'Same cost' : `Aim ${direction}`;
-    return `<li class="guess-row"><span class="guess-number">${index + 1}</span>${itemImage(item)}<span class="guess-name">${escape(item.name)}${feedback.correct ? '<small>✓ Recipe found</small>' : ''}</span><span class="history-recipe" aria-label="Recipe feedback">${item.recipe.map((component, i) => { const color = feedback.slotColors[i], label = color === 'green' ? 'Right slot' : color === 'orange' ? 'Wrong slot' : 'Not in recipe'; return `<span class="history-slot ${color}" title="${escape(catalog.items[component].name)}: ${label}">${itemImage(catalog.items[component])}<b aria-label="${label}">${color === 'green' ? '✓' : color === 'orange' ? '↔' : '×'}</b></span>`; }).join('')}</span><span class="feedback"><span class="price ${direction === 'equal' ? 'green-text' : 'orange-text'}" title="The mystery item’s total gold cost is ${direction} compared with this guess">${direction === 'higher' ? '↑' : direction === 'lower' ? '↓' : '='} ${priceLabel}</span></span></li>`;
+    return `<li class="guess-row"><span class="guess-number">${index + 1}</span>${itemImage(item)}<span class="guess-name">${escape(item.name)}${feedback.correct ? '<small>✓ Recipe found</small>' : ''}</span><span class="history-recipe" aria-label="Recipe feedback">${getGuessRecipe(catalog, id).map((component, i) => { const color = feedback.slotColors[i], label = color === 'green' ? 'Direct ingredient' : color === 'orange' ? 'Related crafting branch' : 'Not in recipe'; return `<span class="history-slot ${color}" title="${escape(catalog.items[component].name)}: ${label}">${itemImage(catalog.items[component])}<b aria-label="${label}">${color === 'green' ? '✓' : color === 'orange' ? '↔' : '×'}</b></span>`; }).join('')}</span><span class="feedback"><span class="price ${direction === 'equal' ? 'green-text' : 'orange-text'}" title="The mystery item’s total gold cost is ${direction} compared with this guess">${direction === 'higher' ? '↑' : direction === 'lower' ? '↓' : '='} ${priceLabel}</span></span></li>`;
   }).join('');
 }
 function renderResult(status, displayed) {
@@ -215,7 +214,11 @@ $('#unlimited-mode').onclick = () => startMode('unlimited');
 $('#hint-button').onclick = () => { state = useHint(state); saveState(); render(); };
 function chatWithKeeper() { quoteIndex = (quoteIndex + 1) % quotes.length; setQuote(quotes[quoteIndex]); keeper.react('chat'); }
 $('#quote-button').onclick = chatWithKeeper;
-$('.keeper-scene').addEventListener('keeper-chat', chatWithKeeper);
+// Give button clicks a brief acknowledgement. Guessing has its own stronger reaction.
+document.addEventListener('click', event => {
+  const button = event.target.closest('button');
+  if (button && !button.disabled && !['guess-button', 'quote-button'].includes(button.id)) keeper.react('chat');
+});
 document.addEventListener('keydown', event => {
   if (event.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName) && !$('#modal').open && state && puzzleStatus(state) === 'playing') { event.preventDefault(); $('#item-search').focus(); }
 });
@@ -223,7 +226,7 @@ document.addEventListener('keydown', event => {
 function openModal(content) { $('#modal-content').innerHTML = content; $('#modal').showModal(); }
 $('.modal-close').onclick = () => $('#modal').close();
 $('#modal').addEventListener('click', event => { if (event.target === $('#modal')) { const bounds = $('#modal').getBoundingClientRect(); if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) $('#modal').close(); } });
-$('#help-button').onclick = () => openModal(`<span class="eyebrow">WELCOME TO THE SHOP</span><h2>Find the secret recipe.</h2><ol><li>Start with any item: search, select it, then <strong>buy your guess</strong>.</li><li>Its recipe lights up. <span class="green-text">Green: right ingredient, right slot.</span> <span class="orange-text">Orange: right ingredient, different slot.</span> Grey: not in the secret recipe.</li><li>Use the colours to choose your next item. You have six guesses. The gold arrow tells you to aim for a higher or lower total price.</li></ol><p><strong>Daily:</strong> the same recipe for everyone. New stock at 00:00 UTC.<br><strong>Unlimited:</strong> a fresh recipe whenever you want.</p><p>Recipes use Riot’s component order. Items with identical recipes and combine costs are all accepted. Progress stays in this browser.</p>`);
+$('#help-button').onclick = () => openModal(`<span class="eyebrow">WELCOME TO THE SHOP</span><h2>Find the secret recipe.</h2><ol><li>Start with any item: search, select it, then <strong>buy your guess</strong>. Basic items work as clues too.</li><li>Its ingredients light up. <span class="green-text">Green: a direct ingredient.</span> <span class="orange-text">Orange: builds into, or is built from, an ingredient.</span> Grey: unrelated.</li><li>Use the colours to find the secret item in six guesses. The gold arrow tells you to aim for a higher or lower total price.</li></ol><p>For example, <strong>Long Sword</strong> turns orange when the secret recipe needs <strong>Serrated Dirk</strong>. Ingredient order doesn’t matter.</p><p><strong>Daily:</strong> the same recipe for everyone, refreshed at 00:00 UTC.<br><strong>Unlimited:</strong> a fresh recipe whenever you want.</p><p>Items with identical recipes and combine costs are all accepted. Progress stays in this browser.</p>`);
 $('#stats-button').onclick = () => {
   const records = new Map();
   try { for (let i = 0; i < localStorage.length; i++) { const key = localStorage.key(i); if (key.startsWith(storagePrefix + 'daily:')) { try { records.set(key, JSON.parse(localStorage.getItem(key))); } catch { /* Ignore a damaged individual record. */ } } } } catch { /* Storage may be blocked. */ }

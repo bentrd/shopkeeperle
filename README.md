@@ -2,9 +2,9 @@
 
 A small League of Legends item recipe guessing game. **[Play Shopkeeperle](https://bentrd.github.io/shopkeeperle/)**
 
-Find the secret item in six guesses. Pick an item, then inspect its recipe: green means the correct ingredient in the correct slot; orange means the correct ingredient in another slot; grey means absent. A gold arrow helps narrow down the total cost. Recipes use Riot’s component order, with Wordle-style duplicate accounting. Daily mode gives everyone the same UTC-day recipe. Unlimited mode keeps the shop open. Includes search, item filters, a first-letter hint, daily statistics, browser-local progress, and spoiler-free sharing. Identical recipes and combine costs are accepted as equivalent answers.
+Find the secret item in six guesses. Pick any shop item, then inspect its ingredients: green means a direct ingredient of the secret recipe; orange means a subcomponent or upgrade in that ingredient’s crafting branch; grey means unrelated. Order doesn’t matter. A basic item is scored as itself, so guessing Long Sword gives an orange clue toward a recipe that needs Serrated Dirk. A gold arrow helps narrow down the secret item’s total cost. Daily mode gives everyone the same UTC-day recipe. Unlimited mode keeps the shop open. Includes search, item filters, a first-letter hint, daily statistics, browser-local progress, and spoiler-free sharing. Identical recipes and combine costs are accepted as equivalent answers.
 
-The supplied shopkeeper is a lightweight CSS puppet with subtle head tracking, a silhouette hover glow, guess reactions, and click-to-chat. Pointer tracking stays in the browser. Reduced-motion preferences disable movement.
+The supplied shopkeeper is a lightweight CSS puppet with a small idle animation and reactions to button clicks and guesses. Reduced-motion preferences disable movement.
 
 ## Run locally
 

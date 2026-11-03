@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#081416">
-  <meta name="description" content="Guess a League item. Read its recipe’s green and orange clues. Find the mystery build in six tries. Daily and unlimited play.">
+  <meta name="description" content="Guess a League item. Read its green ingredient and orange crafting clues. Find the mystery build in six tries. Daily and unlimited play.">
   <meta property="og:title" content="Shopkeeperle — Know your build?">
   <meta property="og:description" content="One recipe. Six guesses. A little shop knowledge goes a long way.">
   <title>Shopkeeperle — Know your build?</title>
@@ -45,7 +45,7 @@
           <div class="recipe-connector" aria-hidden="true"><span></span></div>
           <div class="ingredients" id="ingredients"><span class="loading">Unpacking the wares…</span></div>
           <div class="combine-cost"><span class="coin" aria-hidden="true"></span><span id="combine-cost">—</span><span id="cost-caption">gold</span></div>
-          <div class="color-key"><span><i class="green"></i>Right slot</span><span><i class="orange"></i>Wrong slot</span><span><i class="grey"></i>Not in recipe</span></div>
+          <div class="color-key"><span><i class="green"></i>Direct ingredient</span><span><i class="orange"></i>Related item</span><span><i class="grey"></i>Unrelated</span></div>
           <div class="board-bottom"><span id="attempt-label">6 guesses remaining</span><div class="attempts" id="attempts" aria-label="Six attempts"></div><button class="text-button" id="hint-button">Need a hint?</button></div>
           <div class="hint" id="hint" hidden></div>
         </div>
@@ -62,7 +62,7 @@
       <section class="result-panel" id="result-panel" hidden aria-live="polite"></section>
     </section>
 
-    <section class="guess-history" id="history-section" hidden><div class="history-heading"><h2>Your purchases</h2><span>GREEN = RIGHT SLOT · ORANGE = WRONG SLOT</span></div><ol id="history"></ol></section>
+    <section class="guess-history" id="history-section" hidden><div class="history-heading"><h2>Your purchases</h2><span>GREEN = DIRECT · ORANGE = RELATED</span></div><ol id="history"></ol></section>
     <div class="under-shop"><span><span class="tiny-diamond"></span><span id="reset-label">New stock every day at 00:00 UTC</span></span><button class="text-button" id="about-button">Data & credits <span aria-hidden="true">↗</span></button></div>
   </main>
 

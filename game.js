@@ -14,6 +14,10 @@ function answerIds(catalog) {
   return [...new Set(catalog.answers.map(String))].filter(id => catalog.items[id]).sort((a, b) => Number(a) - Number(b));
 }
 
+function shopIds(catalog) {
+  return Object.keys(catalog.items).sort((a, b) => Number(a) - Number(b));
+}
+
 export function dailyAnswerId(catalog, date = utcDate()) {
   const ids = answerIds(catalog);
   if (!ids.length) throw new Error('No items available.');
@@ -44,7 +48,7 @@ export function searchItems(catalog, query = '', { exclude = [] } = {}) {
   const excluded = new Set(exclude.map(String));
   const normalized = normalizeSearch(query);
   const words = normalized.split(' ').filter(Boolean);
-  return answerIds(catalog).filter(id => !excluded.has(id)).map(id => catalog.items[id])
+  return shopIds(catalog).filter(id => !excluded.has(id)).map(id => catalog.items[id])
     .filter(item => words.every(word => normalizeSearch(item.name).includes(word)))
     .sort((a, b) => {
       const aStarts = normalizeSearch(a.name).startsWith(normalized);
@@ -53,28 +57,45 @@ export function searchItems(catalog, query = '', { exclude = [] } = {}) {
     });
 }
 
-/** Wordle-style slot feedback. Reserve exact matches before spending duplicate ingredients. */
-export function scoreRecipeSlots(targetRecipe, guessedRecipe) {
-  const normalized = id => id == null ? null : String(id);
-  const target = targetRecipe.map(normalized);
-  const guessed = guessedRecipe.map(normalized);
-  const result = guessed.map((id, index) => id !== null && id === target[index] ? 'green' : 'grey');
-  const remaining = new Map();
-  for (let index = 0; index < target.length; index++) {
-    if (result[index] === 'green') continue;
-    const id = target[index];
-    if (id === null) continue;
-    remaining.set(id, (remaining.get(id) || 0) + 1);
+/** Basic items have no recipe: their own icon supplies useful component feedback. */
+export function getGuessRecipe(catalog, guessId) {
+  const id = String(guessId);
+  if (!Object.hasOwn(catalog.items, id)) throw new Error('Unknown item.');
+  const recipe = catalog.items[id].recipe || [];
+  return recipe.length ? recipe.map(String) : [id];
+}
+
+/** Strict crafting ancestry, with a visited set so malformed cycles cannot recurse forever. */
+function containsComponent(catalog, itemId, componentId) {
+  const visited = new Set([itemId]);
+  const pending = [...(catalog.items[itemId]?.recipe || [])].map(String);
+  while (pending.length) {
+    const id = pending.pop();
+    if (id === componentId) return true;
+    if (visited.has(id)) continue;
+    visited.add(id);
+    const item = catalog.items[id];
+    if (item) pending.push(...(item.recipe || []).map(String));
   }
-  for (let index = 0; index < guessed.length; index++) {
-    if (result[index] === 'green') continue;
-    const id = guessed[index];
-    if (remaining.get(id) > 0) {
-      result[index] = 'orange';
-      remaining.set(id, remaining.get(id) - 1);
-    }
-  }
-  return result;
+  return false;
+}
+
+/** Green = direct ingredient; orange = its subcomponent or upgrade. Recipe order is irrelevant. */
+export function scoreRecipeComponents(catalog, answerId, guessId) {
+  const answer = catalog.items[String(answerId)];
+  if (!answer) throw new Error('Unknown item.');
+  const target = (answer.recipe || []).map(String);
+  const guessed = getGuessRecipe(catalog, guessId);
+  const remaining = [...target];
+  const colors = guessed.map(id => {
+    const index = remaining.indexOf(id);
+    if (index === -1) return 'grey';
+    remaining.splice(index, 1);
+    return 'green';
+  });
+  // Orange is a relationship cue, not a quantity claim, and does not consume green matches.
+  return colors.map((color, index) => color === 'green' ? color : target.some(id =>
+    id !== guessed[index] && (containsComponent(catalog, id, guessed[index]) || containsComponent(catalog, guessed[index], id))) ? 'orange' : 'grey');
 }
 
 export function compareGuess(catalog, answerId, guessId) {
@@ -83,7 +104,8 @@ export function compareGuess(catalog, answerId, guessId) {
   if (!answer || !guess) throw new Error('Unknown item.');
   const remaining = (answer.recipe || []).map(String);
   const sharedComponents = [];
-  for (const id of (guess.recipe || []).map(String)) {
+  const guessedRecipe = getGuessRecipe(catalog, guessId);
+  for (const id of guessedRecipe) {
     const index = remaining.indexOf(id);
     if (index !== -1) {
       sharedComponents.push(id);
@@ -96,7 +118,7 @@ export function compareGuess(catalog, answerId, guessId) {
   const correct = String(answerId) === String(guessId) || signature(answer) === signature(guess);
   return {
     correct,
-    slotColors: correct ? (guess.recipe || []).map(() => 'green') : scoreRecipeSlots(answer.recipe || [], guess.recipe || []),
+    slotColors: correct ? guessedRecipe.map(() => 'green') : scoreRecipeComponents(catalog, answerId, guessId),
     sharedComponents,
     sharedCount: sharedComponents.length,
     componentCount: (answer.recipe || []).length,
@@ -119,7 +141,7 @@ export function puzzleStatus(state) {
 export function makeGuess(state, guessId, catalog) {
   const id = String(guessId);
   if (puzzleStatus(state) !== 'playing') throw new Error('This recipe is finished.');
-  if (!answerIds(catalog).includes(id)) throw new Error('Choose an item from the shop.');
+  if (!Object.hasOwn(catalog.items, id)) throw new Error('Choose an item from the shop.');
   if (state.guesses.includes(id)) throw new Error('You already guessed that item.');
   return { ...state, guesses: [...state.guesses, id], solvedBy: compareGuess(catalog, state.answerId, id).correct ? id : null };
 }
@@ -141,8 +163,9 @@ export function restorePuzzle(raw, catalog, expected = {}) {
     if (expected.mode && state.mode !== expected.mode) return null;
     if (expected.date && state.date !== expected.date) return null;
     if (expected.answerId != null && state.answerId !== String(expected.answerId)) return null;
-    const ids = new Set(answerIds(catalog));
-    if (typeof state.answerId !== 'string' || !ids.has(state.answerId)) return null;
+    const answers = new Set(answerIds(catalog));
+    const ids = new Set(shopIds(catalog));
+    if (typeof state.answerId !== 'string' || !answers.has(state.answerId)) return null;
     if (!Array.isArray(state.guesses) || state.guesses.length > MAX_GUESSES) return null;
     if (new Set(state.guesses).size !== state.guesses.length || state.guesses.some(id => typeof id !== 'string' || !ids.has(id))) return null;
     const winner = state.guesses.findIndex(id => compareGuess(catalog, state.answerId, id).correct);
