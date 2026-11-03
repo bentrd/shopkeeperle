@@ -6,6 +6,16 @@ Find the secret item in six guesses. Pick a **completed item or boots**, then in
 
 The supplied shopkeeper is a lightweight CSS puppet with visible breathing, a gentle sway, a head nod, and reactions to button clicks and guesses. Reduced-motion preferences disable movement. Wins and losses open a League-inspired VICTORY/DEFEAT reveal; a large status banner remains at the top after closing it or reloading. The item shop’s bottom grip expands the inventory by mouse, touch, or keyboard.
 
+## Share cards and app identity
+
+After a completed recipe, **Share result** offers spoiler-free image cards in Story (1080×1920), portrait post (1080×1350), and square (1080×1080) formats. Cards show only the mode/date, result, score, hint flag, and clue colors—never the answer or item names. A QR code opens the game.
+
+**Share image** uses the device’s native share sheet when PNG-file sharing is supported. Choose Instagram if the device offers it; the browser cannot select Instagram or post a Story automatically. **Save PNG**, **Open image**, **Copy result**, and **Copy link** remain available. On iPhone, the image preview also supports the usual touch-and-hold save interaction. The PNG is prepared before the share button is enabled so Safari’s user activation stays valid.
+
+The site includes SVG/ICO/PNG favicons, a 180px Apple home-screen icon, 192px/512px app icons, a maskable icon, a standalone web manifest, and a 1200×630 Open Graph/Twitter preview. This does not introduce an offline cache; Riot data still refreshes normally. Brand and share-card fonts are local, with their open font licenses in `assets/brand/fonts/`.
+
+Regenerate the committed branding with `node scripts/generate-brand-assets.mjs`, or create example result cards with `node scripts/preview-share-cards.mjs`. These optional authoring scripts use `sharp` and `@napi-rs/canvas` installed locally or supplied through `BRAND_NODE_MODULES`; the game, tests, and normal static build have no package dependencies. See [brand provenance](assets/brand/SOURCES.md).
+
 ## Run locally
 
 Node 24+ recommended. No package dependencies or Riot API key.

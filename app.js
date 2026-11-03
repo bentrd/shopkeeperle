@@ -4,6 +4,8 @@ import { initShopkeeper } from './keeper.js';
 import { initSpeechBubble } from './speech.js';
 import { initOutcomeDialog, outcomeCrest } from './outcome.js';
 import { initShopResize } from './shop-resize.js';
+import { buildShareModel } from './share-model.js';
+import { initSharing } from './sharing.js';
 
 const $ = selector => document.querySelector(selector);
 const escape = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
@@ -25,6 +27,10 @@ const outcome = initOutcomeDialog({
   onNext: startNextRecipe,
   onShare: shareResult,
   onDismiss: () => $('#result-heading')?.focus(),
+});
+const sharing = initSharing({
+  dialog: $('#share-dialog'),
+  onDismiss: () => ($('#result-heading') || $('#item-search'))?.focus(),
 });
 
 function readSave(key) { if (memorySaves.has(key)) return memorySaves.get(key); try { return localStorage.getItem(storagePrefix + key); } catch { return null; } }
@@ -69,6 +75,7 @@ async function startMode(nextMode, { newPuzzle = false } = {}) {
   const generation = ++loadGeneration;
   pendingMode = nextMode;
   outcome.close({navigating: true});
+  sharing.close({navigating: true});
   $('#game').setAttribute('aria-busy', 'true');
   if (state) saveState();
   try {
@@ -268,16 +275,10 @@ $('#stats-button').onclick = () => {
 };
 $('#about-button').onclick = () => openModal(`<span class="eyebrow">STRAIGHT FROM THE SOURCE</span><h2>Fresh wares, familiar faces.</h2><p>Recipes and icons: <a href="https://developer.riotgames.com/docs/lol#data-dragon" target="_blank" rel="noreferrer">Riot Data Dragon</a>. Patch <strong>${escape(catalog?.version || '—')}</strong>, Summoner’s Rift shop items.</p><p>Unlimited checks Riot when you open the game. The published catalog refreshes every three hours. Daily recipes are fixed to their original patch so everyone gets the same puzzle.</p><p>Riot publishes Data Dragon manually, so new patches can take a little time to arrive.${refreshedAt ? ` Last live check: ${escape(refreshedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))}.` : ''}</p><p>League characters and item artwork © Riot Games. Shopkeeper chatter is original flavour text. A fan project inspired by <a href="https://minecraftle.zachmanson.com/" target="_blank" rel="noreferrer">Minecraftle</a> and Wordle.</p><p><a href="https://github.com/bentrd/shopkeeperle" target="_blank" rel="noreferrer">Source code ↗</a></p>`);
 
-async function shareResult() {
-  const status = puzzleStatus(state);
-  const squares = state.guesses.map(id => compareGuess(catalog, state.answerId, id).slotColors.map(color => color === 'green' ? '🟩' : color === 'orange' ? '🟧' : '⬛').join('')).join('\n');
-  const url = new URL(base); if (mode === 'unlimited') url.searchParams.set('mode', 'unlimited');
-  const text = `Shopkeeperle ${mode === 'daily' ? state.date : 'Unlimited'} · ${status === 'won' ? state.guesses.length : 'X'}/${MAX_GUESSES}${state.hintUsed ? ' 💡' : ''}\n${squares}\n${url.href}`;
-  try { await navigator.clipboard.writeText(text); toast('Result copied. Share your shop knowledge!'); }
-  catch {
-    openModal('<h2>Your receipt</h2><p>Copy your result:</p><textarea id="share-text" rows="4" readonly style="width:100%;padding:12px;background:#071518;color:#d9d4b4;border:1px solid #7c7348"></textarea>');
-    $('#share-text').value = text; $('#share-text').select();
-  }
+function shareResult() {
+  if (!state || pendingMode || puzzleStatus(state) === 'playing') return;
+  try { sharing.open(buildShareModel({state, catalog, siteUrl:$('link[rel="canonical"]')?.href || base.href})); }
+  catch { toast('Finish a recipe to share its result.'); }
 }
 function updateClock() {
   if (!state) return;

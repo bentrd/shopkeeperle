@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Shopkeeperle shop crest"><defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#163a3f"/><stop offset=".5" stop-color="#092229"/><stop offset="1" stop-color="#041319"/></linearGradient>
+  <radialGradient id="glow"><stop stop-color="#4d786546"/><stop offset="1" stop-color="#09222900"/></radialGradient>
+  <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0b4"/><stop offset=".38" stop-color="#d4b16c"/><stop offset="1" stop-color="#916730"/></linearGradient>
+  <linearGradient id="bag" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#e8ca81"/><stop offset="1" stop-color="#a27b3c"/></linearGradient>
+</defs><path d="M256 84 402 168v176l-146 84-146-84V168Z" fill="#06191d" stroke="url(#gold)" stroke-width="6"/>
+  <path d="M256 101 387 177v158l-131 76-131-76V177Z" fill="url(#glow)" stroke="#a88b4b46" stroke-width="2"/>
+  <path d="M212 220v-31c0-25 19-45 44-45s44 20 44 45v31" fill="none" stroke="url(#gold)" stroke-width="13" stroke-linecap="round"/>
+  <path d="m171 216-23 135 26 25h164l26-25-23-135Z" fill="url(#bag)" stroke="#edcf8a" stroke-width="5" stroke-linejoin="round"/>
+  <path d="m171 216 23 30h124l23-30M172 351h168" fill="none" stroke="#795329" stroke-width="5" opacity=".55"/>
+  <circle cx="256" cy="298" r="51" fill="#0a292c" stroke="#ffe7a1" stroke-width="6"/>
+  <path d="M275 276c-8-9-34-8-37 3-6 18 39 14 37 32-2 16-32 19-42 6M256 261v72" fill="none" stroke="#ecd192" stroke-width="9" stroke-linecap="round"/>
+  <path d="m256 108 7 9-7 9-7-9Z" fill="#efd699"/>
+  <path d="m256 393 7 9-7 9-7-9Z" fill="#d5b16c"/></svg>

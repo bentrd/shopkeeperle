@@ -28,7 +28,7 @@ export function initOutcomeDialog({ dialog, onNext, onShare, onDismiss }) {
   dialog.querySelector('.endgame-close').onclick = () => close();
   dialog.querySelector('.endgame-inspect').onclick = () => close();
   dialog.querySelector('.endgame-continue').onclick = () => { close({ navigating: true }); onNext(); };
-  dialog.querySelector('.endgame-share').onclick = () => { close(); onShare(); };
+  dialog.querySelector('.endgame-share').onclick = () => { close({ navigating: true }); onShare(); };
   dialog.addEventListener('close', () => { if (restoreFocus) onDismiss(); });
 
   return {

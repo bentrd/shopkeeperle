@@ -1,0 +1,25 @@
+.brand .brand-emblem{width:43px;height:43px;flex-shrink:0;object-fit:contain}
+dialog.share-dialog{width:min(520px,calc(100vw - 24px));max-width:520px;max-height:calc(100dvh - 24px);padding:28px;background:linear-gradient(145deg,#10282e,#09191e);border-color:#ac925c;scrollbar-width:thin;overflow:auto}
+.share-dialog::backdrop{background:#02090ce0;backdrop-filter:blur(6px)}
+.share-close{position:absolute;top:10px;right:10px;width:29px;height:29px;font:24px Georgia}
+.share-dialog>.eyebrow{font-size:9px;letter-spacing:1.3px;margin:4px 30px 9px 0}
+.share-dialog h2{font:500 25px/1.3 var(--serif);color:#e2cba0;margin:0 25px 19px 0}
+.share-formats{display:flex;gap:6px;padding:4px;border:1px solid #74613f66;background:#06171b;margin-bottom:16px}
+.share-formats button{flex:1;padding:8px 6px;background:transparent;color:#93aaa3;font-size:12px}
+.share-formats button small{display:inline-block;margin-left:6px;font-size:10px;color:#819b91}
+.share-formats button[aria-pressed=true]{color:#e8cf96;background:#b4975c20;box-shadow:inset 0 0 0 1px #9b814c66}
+.share-preview-wrap{display:flex;align-items:center;justify-content:center;height:clamp(210px,43dvh,424px);padding:12px;background:#041115;border:1px solid #49605966;margin-bottom:16px}
+.share-preview-wrap img{display:block;max-height:100%;max-width:100%;width:auto;height:auto;box-shadow:0 7px 30px #0005;object-fit:contain;user-select:auto;-webkit-touch-callout:default}
+.share-rendering{font-size:12px;color:#a2b6a6}
+.share-image-actions{display:flex;gap:9px}
+.share-image-actions .gold-button{flex:1;min-width:0;min-height:43px;font-size:11px;letter-spacing:1px;padding:10px;cursor:pointer;text-align:center}
+.share-save[aria-disabled=true]{opacity:.45;cursor:wait;pointer-events:none}
+.share-copy-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:9px}
+.share-copy-actions button{flex:1;min-height:36px;padding:9px;font-size:11px}
+.share-copy-actions .share-open{font-size:11px;margin:3px 0 0 4px}
+.share-hint{font-size:11px;color:#a0b2a6;line-height:1.5;margin:14px 0 0}
+.share-status{font-size:12px;color:#d8bc83;line-height:1.5;margin:8px 0 0;min-height:0}
+.share-manual-copy{width:100%;min-height:110px;margin-top:10px;padding:12px;background:#06171b;border:1px solid #847148;color:#d8e0ce;font:12px/1.5 var(--sans)}
+@media(max-width:760px){.brand .brand-emblem{width:34px;height:34px}}
+@media(max-width:420px){dialog.share-dialog{padding:24px 17px}.share-dialog h2{font-size:22px}.share-dialog>.eyebrow{font-size:8px}.share-formats button{font-size:11px;padding:8px 4px}.share-formats button small{font-size:9px;margin-left:4px}.share-preview-wrap{padding:9px}.share-image-actions .gold-button{font-size:10px}.share-hint{font-size:11px}}
+@media(max-width:420px){.share-copy-actions .share-open{flex-basis:100%;text-align:center;margin:3px 0 0}.share-copy-actions button{min-height:40px}}
