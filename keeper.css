@@ -45,10 +45,37 @@
 @keyframes keeper-nod { 0%,100% { transform: rotate(0); } 25%,65% { transform: translateY(.6px) rotate(.8deg); } 45%,80% { transform: translateY(-.3px) rotate(-.5deg); } }
 @keyframes keeper-shake { 0%,100% { transform: rotate(0); } 20%,60% { transform: rotate(-.9deg); } 40%,80% { transform: rotate(.9deg); } }
 @keyframes keeper-chat { 0%,100% { transform: rotate(0); } 30% { transform: translateY(.4px) rotate(-.8deg); } 65% { transform: rotate(.4deg); } }
-@media (max-width: 760px) and (min-width: 421px) {
-  .keeper-scene .keeper-rig { height: 260px; max-height: calc(100% - 28px); }
-}
-@media (max-width: 420px) {
+/* Phone and narrow-tablet shops use a full-width portrait banner above the recipe. */
+@media (max-width: 760px) {
+  .recipe-layout { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+  .keeper-scene {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 128px;
+    align-content: start;
+    gap: 12px;
+    height: auto;
+    min-height: 160px;
+    padding: 16px 18px;
+    border-right: 0;
+    border-bottom: 1px solid #a1874a35;
+  }
+  .keeper-caption { position: relative; grid-column: 1; top: auto; left: auto; }
+  .keeper-caption h2 { margin: 0; }
+  .keeper-scene .speech-bubble {
+    position: relative;
+    grid-column: 1;
+    justify-self: start;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    width: 100%;
+    max-width: 340px;
+    margin: 0;
+  }
+  .speech-bubble::before { top: 16px; left: auto; right: -6px; transform: rotate(135deg); }
+  .speech-bubble small { display: none; }
+  .scene-ground { height: 25px; }
   .keeper-scene .keeper-rig { height: 230px; max-height: none; width: calc(230px * 725 / 1005); bottom: -65px; left: auto; right: 6px; top: auto; transform: none; }
 }
 @media (prefers-reduced-motion: reduce) {
