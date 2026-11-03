@@ -1,0 +1,27 @@
+/* Keep the speech-tail outside the button visible while its box changes height. */
+.speech-bubble-ready { box-sizing: border-box; overflow: visible; }
+.speech-bubble .speech-quote { display: block; }
+.speech-bubble::before { transition: border-color 180ms ease, background-color 180ms ease; }
+.speech-bubble:hover { transform: translateY(-1px); }
+.speech-bubble:hover::before, .speech-bubble:focus-visible::before { border-left-color: var(--gold); border-top-color: var(--gold); }
+.speech-bubble-ready::after {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  pointer-events: none;
+  opacity: 0;
+  border-radius: inherit;
+  background: linear-gradient(110deg, transparent 38%, #e5c57c12 49%, #e5c57c20 50%, transparent 62%);
+  background-size: 280% 100%;
+  background-position: 150% 0;
+}
+.speech-bubble-ready.speech-bubble-changing::after { animation: speech-sheen 500ms ease-out both; }
+@keyframes speech-sheen {
+  0% { opacity: 0; background-position: 150% 0; }
+  24% { opacity: .7; }
+  100% { opacity: 0; background-position: -50% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .speech-bubble-ready::after { display: none; animation: none !important; }
+  .speech-bubble:hover { transform: none; }
+}

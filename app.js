@@ -1,6 +1,7 @@
 import { MAX_GUESSES, utcDate, millisecondsUntilReset, randomAnswerId, normalizeSearch, searchItems, getGuessRecipe, compareGuess, createPuzzle, puzzleStatus, makeGuess, useHint, serializePuzzle, restorePuzzle, dailyStats } from './game.js';
 import { buildCatalog, VERSIONS_URL } from './catalog.js';
 import { initShopkeeper } from './keeper.js';
+import { initSpeechBubble } from './speech.js';
 
 const $ = selector => document.querySelector(selector);
 const escape = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
@@ -8,6 +9,8 @@ const quotes = ['What are we building today?', 'A sharp eye is worth more than a
 const base = new URL('./', location.href);
 const storagePrefix = 'shopkeeperle:v1:';
 const keeper = initShopkeeper({scene: $('.keeper-scene'), image: $('img.keeper')});
+const speech = initSpeechBubble({button: $('#quote-button'), quote: $('#quote')});
+speech.setText($('#quote').textContent);
 let latestCatalog, catalog, state, daily, dailyCatalog;
 let mode = new URL(location.href).searchParams.get('mode') === 'unlimited' ? 'unlimited' : 'daily';
 let selectedId = null, filter = 'all', quoteIndex = 0, loadGeneration = 0;
@@ -36,7 +39,7 @@ function toast(message) {
   clearTimeout(toast.timer);
   toast.timer = setTimeout(() => { $('#toast').hidden = true; }, 3500);
 }
-function setQuote(text) { $('#quote').textContent = `“${text}”`; }
+function setQuote(text) { speech.setText(`“${text}”`); }
 function itemImage(item, extra = '') { return `<img src="${escape(item.image)}" alt="${escape(item.name)}" width="48" height="48" ${extra}>`; }
 function cleanSearch() { selectedId = null; filter = 'all'; $('#item-search').value = ''; $('#form-message').textContent = ''; }
 
