@@ -1,4 +1,6 @@
 /** Pure game rules. Daily snapshots pin the patch and answer outside this module. */
+import { getPlayableIds } from './catalog.js';
+
 export const MAX_GUESSES = 6;
 
 export function utcDate(now = new Date()) {
@@ -11,15 +13,15 @@ export function millisecondsUntilReset(now = new Date()) {
 }
 
 function answerIds(catalog) {
-  return [...new Set(catalog.answers.map(String))].filter(id => catalog.items[id]).sort((a, b) => Number(a) - Number(b));
-}
-
-function shopIds(catalog) {
-  return Object.keys(catalog.items).sort((a, b) => Number(a) - Number(b));
+  return getPlayableIds(catalog);
 }
 
 export function dailyAnswerId(catalog, date = utcDate()) {
-  const ids = answerIds(catalog);
+  return dailyAnswerFromIds(answerIds(catalog), date);
+}
+
+export function dailyAnswerFromIds(answers, date = utcDate()) {
+  const ids = [...new Set(answers.map(String))].sort((a, b) => Number(a) - Number(b));
   if (!ids.length) throw new Error('No items available.');
   let hash = 2166136261;
   for (const character of `shopkeeperle:${date}`) {
@@ -48,7 +50,7 @@ export function searchItems(catalog, query = '', { exclude = [] } = {}) {
   const excluded = new Set(exclude.map(String));
   const normalized = normalizeSearch(query);
   const words = normalized.split(' ').filter(Boolean);
-  return shopIds(catalog).filter(id => !excluded.has(id)).map(id => catalog.items[id])
+  return answerIds(catalog).filter(id => !excluded.has(id)).map(id => catalog.items[id])
     .filter(item => words.every(word => normalizeSearch(item.name).includes(word)))
     .sort((a, b) => {
       const aStarts = normalizeSearch(a.name).startsWith(normalized);
@@ -115,7 +117,8 @@ export function compareGuess(catalog, answerId, guessId) {
   const difference = answer.gold.total - guess.gold.total;
   const signature = item => `${[...(item.recipe || [])].map(String).sort().join(',')}:${item.gold.combine}`;
   // Some distinct League items have an identical recipe. Accept both despite data ordering.
-  const correct = String(answerId) === String(guessId) || signature(answer) === signature(guess);
+  const correct = answerIds(catalog).includes(String(guessId)) &&
+    (String(answerId) === String(guessId) || signature(answer) === signature(guess));
   return {
     correct,
     slotColors: correct ? guessedRecipe.map(() => 'green') : scoreRecipeComponents(catalog, answerId, guessId),
@@ -141,7 +144,7 @@ export function puzzleStatus(state) {
 export function makeGuess(state, guessId, catalog) {
   const id = String(guessId);
   if (puzzleStatus(state) !== 'playing') throw new Error('This recipe is finished.');
-  if (!Object.hasOwn(catalog.items, id)) throw new Error('Choose an item from the shop.');
+  if (!answerIds(catalog).includes(id)) throw new Error('Choose a completed item or boots from the shop.');
   if (state.guesses.includes(id)) throw new Error('You already guessed that item.');
   return { ...state, guesses: [...state.guesses, id], solvedBy: compareGuess(catalog, state.answerId, id).correct ? id : null };
 }
@@ -164,7 +167,7 @@ export function restorePuzzle(raw, catalog, expected = {}) {
     if (expected.date && state.date !== expected.date) return null;
     if (expected.answerId != null && state.answerId !== String(expected.answerId)) return null;
     const answers = new Set(answerIds(catalog));
-    const ids = new Set(shopIds(catalog));
+    const ids = answers;
     if (typeof state.answerId !== 'string' || !answers.has(state.answerId)) return null;
     if (!Array.isArray(state.guesses) || state.guesses.length > MAX_GUESSES) return null;
     if (new Set(state.guesses).size !== state.guesses.length || state.guesses.some(id => typeof id !== 'string' || !ids.has(id))) return null;

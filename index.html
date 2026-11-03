@@ -13,6 +13,9 @@
   <link rel="stylesheet" href="./style.css">
   <link rel="stylesheet" href="./keeper.css">
   <link rel="stylesheet" href="./speech.css">
+  <link rel="stylesheet" href="./outcome.css">
+  <link rel="stylesheet" href="./shop-resize.css">
+  <link rel="stylesheet" href="./typography.css">
   <script type="module" src="./app.js"></script>
 </head>
 <body>
@@ -30,6 +33,7 @@
 
     <div id="load-error" class="load-error" hidden role="alert"></div>
     <section class="shop-frame" aria-label="Recipe guessing game" aria-busy="true" id="game">
+      <section class="result-panel" id="result-panel" hidden aria-live="polite"></section>
       <div class="recipe-layout">
         <aside class="keeper-scene" aria-label="The shopkeeper">
           <div class="scene-rune" aria-hidden="true"></div><div class="scene-light" aria-hidden="true"></div>
@@ -53,14 +57,13 @@
       </div>
 
       <section class="purchase-panel" aria-label="Choose an item" id="purchase-panel">
-        <div class="purchase-heading"><h2><span class="tiny-diamond"></span> Make your purchase</h2><span id="item-count">THE ITEM SHOP</span></div>
+        <div class="purchase-heading"><h2><span class="tiny-diamond"></span> Make your purchase</h2><span id="item-count">COMPLETED ITEMS + BOOTS</span></div>
         <form id="guess-form" class="guess-form" autocomplete="off"><div class="search-wrap"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><label for="item-search" class="sr-only">Search items</label><input id="item-search" type="search" placeholder="Search for an item…" maxlength="80" aria-describedby="selection-label"><kbd aria-hidden="true">/</kbd></div><button class="gold-button" id="guess-button" disabled type="submit">Buy guess <span aria-hidden="true">→</span></button></form>
         <div class="selection-line"><span id="selection-label">Select an item below, then buy your guess.</span><div class="filter-tabs" aria-label="Filter item shop"><button data-filter="all" aria-pressed="true">All</button><button data-filter="Damage" aria-pressed="false">Attack</button><button data-filter="SpellDamage" aria-pressed="false">Magic</button><button data-filter="defense" aria-pressed="false">Defence</button></div></div>
         <div id="item-grid" class="item-grid" aria-label="Available items"></div>
         <p class="form-message" id="form-message" role="status" aria-live="polite"></p>
       </section>
 
-      <section class="result-panel" id="result-panel" hidden aria-live="polite"></section>
     </section>
 
     <section class="guess-history" id="history-section" hidden><div class="history-heading"><h2>Your purchases</h2><span>GREEN = DIRECT · ORANGE = RELATED</span></div><ol id="history"></ol></section>
@@ -69,6 +72,7 @@
 
   <footer><span>Made for the love of the shop.</span><p>Shopkeeperle was created under Riot Games’ <a href="https://www.riotgames.com/en/legal" target="_blank" rel="noreferrer">“Legal Jibber Jabber” policy</a> using assets owned by Riot Games. Riot Games does not endorse or sponsor this project.</p></footer>
   <dialog id="modal"><button class="icon-button modal-close" aria-label="Close dialog">×</button><div id="modal-content"></div></dialog>
+  <dialog id="outcome-dialog" class="endgame-dialog" aria-labelledby="outcome-title" aria-describedby="outcome-summary"></dialog>
   <div class="toast" id="toast" role="status" hidden></div>
 </body>
 </html>

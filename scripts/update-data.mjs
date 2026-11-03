@@ -4,8 +4,8 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { buildCatalog, VERSIONS_URL } from '../catalog.js';
-import { dailyAnswerId } from '../game.js';
-export { buildCatalog, recipeKey, isShopItem, VERSIONS_URL } from '../catalog.js';
+import { dailyAnswerFromIds } from '../game.js';
+export { buildCatalog, getPlayableIds, recipeKey, isShopItem, VERSIONS_URL } from '../catalog.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DATA = path.join(ROOT, 'data');
@@ -14,7 +14,7 @@ const DATA = path.join(ROOT, 'data');
 export function dailyAnswer(date, answers) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !answers.length) throw new Error('Invalid daily selection input');
   // Share the browser fallback's selection rule; existing saved manifests stay untouched.
-  return dailyAnswerId({ answers, items: Object.fromEntries(answers.map(id => [id, {}])) }, date);
+  return dailyAnswerFromIds(answers, date);
 }
 
 function contentOf(catalog) {

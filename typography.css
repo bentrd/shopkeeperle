@@ -1,0 +1,134 @@
+/* Readable shop typography; the existing League-inspired typefaces stay intact. */
+:root { --muted: #a0b0a8; }
+body { font-size: 15px; line-height: 1.55; }
+.brand { font-size: 22px; }
+.brand-tail { color: #8eadae; }
+.brand small { font-size: 10px; letter-spacing: 1.9px; }
+.patch { font-size: 12px; }
+.eyebrow, .intro .eyebrow { font-size: 10px; }
+.intro p { font-size: 14px; line-height: 1.5; }
+.intro > div:first-child { min-width: 0; }
+.mode-switch button { font-size: 12px; }
+.keeper-caption .eyebrow { font-size: 9px; letter-spacing: 1px; }
+.keeper-caption h2 { font-size: 24px; }
+.speech-bubble { font-size: 16px; line-height: 1.45; }
+.speech-bubble small { font-size: 9.5px; letter-spacing: .8px; }
+.board-heading .eyebrow { font-size: 10px; letter-spacing: 1.2px; }
+.board-date { font-size: 11px; }
+.recipe-board h2 { font-size: 17px; }
+.recipe-subtitle { font-size: 12px; line-height: 1.45; }
+.ingredient span, .ingredient.unknown > span { font-size: 11px; line-height: 1.35; overflow-wrap: anywhere; }
+.combine-cost { font-size: 12px; }
+.color-key { flex-wrap: wrap; justify-content: center; gap: 6px 14px; font-size: 11px; line-height: 1.4; }
+.color-key > span { white-space: nowrap; }
+.board-bottom { flex-wrap: wrap; font-size: 12px; gap: 10px; }
+.text-button, .board-bottom .text-button { font-size: 11px; }
+.hint { font-size: 13px; line-height: 1.5; }
+.purchase-heading { gap: 8px 15px; flex-wrap: wrap; align-items: baseline; }
+.purchase-heading h2 { font-size: 15px; }
+.purchase-heading > span { font-size: 10px; letter-spacing: .8px; }
+.search-wrap input { font-size: 14px; }
+.search-wrap kbd { font-size: 12px; }
+.gold-button, .secondary-button { font-size: 11.5px; letter-spacing: 1px; }
+.gold-button { gap: 18px; }
+.selection-line, .filter-tabs button { font-size: 12px; }
+.selection-line { line-height: 1.45; flex-wrap: wrap; }
+.filter-tabs { flex-wrap: wrap; gap: 10px 18px; }
+.form-message { font-size: 12px; line-height: 1.45; }
+.empty-search, .loading, .load-error { font-size: 14px; }
+.shop-resize-label { font-size: 10px; letter-spacing: .5px; }
+.under-shop, .under-shop .text-button { font-size: 11px; }
+.under-shop { flex-wrap: wrap; gap: 9px 18px; line-height: 1.5; }
+.history-heading { flex-wrap: wrap; gap: 6px 12px; }
+.history-heading h2 { font-size: 15px; }
+.history-heading > span { font-size: 9px; letter-spacing: .7px; }
+.guess-row, .guess-row .guess-name { font-size: 13px; }
+.guess-row .guess-number { font-size: 12px; }
+.guess-name small { font-size: 10px; }
+.feedback { font-size: 12px; }
+.history-slot b { font-size: 9px; width: 13px; height: 13px; line-height: 11px; }
+.result-panel p, #result-panel .result-copy p { font-size: 13px; line-height: 1.55; }
+#result-panel .result-actions button, .result-inspect { font-size: 11.5px; }
+#modal-content h2 { font-size: 25px; }
+#modal-content p, #modal-content li { font-size: 14px; line-height: 1.6; }
+#modal-content .eyebrow { font-size: 10px; }
+.stat-grid span { font-size: 11px; }
+.distribution > div { font-size: 13px; }
+.distribution .bar { font-size: 12px; }
+.toast { font-size: 14px; }
+.endgame-eyebrow { font-size: 10px; }
+.endgame-summary { font-size: 14px; }
+.endgame-item-label { font-size: 10px; }
+.endgame-item strong { font-size: 20px; }
+.endgame-actions button, .endgame-actions .endgame-continue.gold-button { font-size: 11.5px; }
+.endgame-share { font-size: 11px; }
+footer { font-size: 10px; }
+footer > span { font-size: 14px; }
+footer p { font-size: 9.5px; line-height: 1.65; }
+
+/* Quiet supporting labels still need enough contrast against the dark shop. */
+.intro p, .board-date, .recipe-subtitle, .color-key, .board-bottom,
+.combine-cost, .selection-line, .filter-tabs button, .under-shop,
+.under-shop .text-button, .history-heading > span, .stat-grid span {
+  color: #a0b0a8;
+}
+.purchase-heading > span, .speech-bubble small, .endgame-item-label { color: #a8b5a7; }
+.ingredient.unknown > span { color: #8fa99d; }
+.guess-row .guess-number { color: #91a79b; }
+.search-wrap input::placeholder { color: #96aaa0; }
+.shop-resize-label { color: #b0aa8f; }
+footer p { color: #91a69b; }
+
+@media (max-width: 760px) {
+  .brand { font-size: 16px; }
+  .brand small { font-size: 9px; letter-spacing: .9px; }
+  .intro .eyebrow { font-size: 9px; letter-spacing: .8px; }
+  .intro p { font-size: 13px; }
+  .mode-switch button { min-width: 90px; min-height: 32px; font-size: 12px; }
+  .keeper-caption .eyebrow { display: none; }
+  .keeper-caption h2 { font-size: 18px; }
+  .speech-bubble { font-size: 14px; }
+  .board-heading { gap: 8px; flex-wrap: wrap; }
+  .board-heading .eyebrow, .board-date { font-size: 10px; }
+  .recipe-board h2 { font-size: 15px; }
+  .recipe-subtitle { font-size: 11px; }
+  .ingredient span, .ingredient.unknown > span { font-size: 10px; }
+  .combine-cost, .board-bottom { font-size: 11px; }
+  .color-key { font-size: 10px; }
+  .board-bottom .text-button { font-size: 11px; }
+  .purchase-heading h2 { font-size: 14px; }
+  .purchase-heading > span { font-size: 10px; }
+  .search-wrap input { font-size: 14px; }
+  .gold-button { min-width: 108px; padding: 10px 12px; gap: 10px; font-size: 11px; }
+  .selection-line, .filter-tabs button { font-size: 12px; }
+  .guess-row, .guess-row .guess-name { font-size: 12px; }
+  .feedback { font-size: 11px; }
+  .history-heading > span { font-size: 9px; letter-spacing: .4px; }
+  .endgame-eyebrow { font-size: 9px; }
+  .endgame-summary { font-size: 13px; }
+  .endgame-item strong { font-size: 16px; }
+  .endgame-item-label { font-size: 10px; }
+  .endgame-actions button, .endgame-actions .endgame-continue.gold-button { font-size: 11px; }
+  #result-panel .result-copy p { font-size: 12px; }
+  #result-panel .result-actions button { font-size: 11px; }
+  footer > span { font-size: 13px; }
+  footer p { font-size: 9.5px; }
+}
+
+@media (max-width: 420px) {
+  .brand small { display: none; }
+  h1 { font-size: 27px; }
+  .intro p { font-size: 13px; }
+  .keeper-caption .eyebrow { display: none; }
+  .keeper-caption h2 { font-size: 18px; }
+  .speech-bubble { font-size: 14px; }
+  .ingredient span, .ingredient.unknown > span { font-size: 10px; }
+  .ingredients { gap: 7px; }
+  .ingredient { flex: 0 1 67px; }
+  .board-bottom { flex-wrap: wrap; font-size: 11px; }
+  .color-key { gap: 6px 12px; font-size: 10px; }
+  .filter-tabs { margin-left: 0; }
+  .under-shop > span { max-width: 100%; }
+  .history-heading > span { font-size: 9px; }
+  .endgame-item strong { max-width: 180px; overflow-wrap: anywhere; }
+}

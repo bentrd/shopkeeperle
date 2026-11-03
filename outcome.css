@@ -1,0 +1,61 @@
+/* Blue and gold for victory; broken crimson for defeat. */
+.victory{--result-color:#89e8ed;--result-glow:#1eabd0;--result-wash:#125b6c;--result-edge:#c9ae72}
+.defeat{--result-color:#ee9b8a;--result-glow:#cf3c31;--result-wash:#6d211f;--result-edge:#bc8464}
+.outcome-crest{display:block;overflow:visible;fill:none;stroke:var(--result-edge);stroke-width:1.5;stroke-linejoin:round;width:min(540px,100%);height:auto;filter:drop-shadow(0 0 15px color-mix(in srgb,var(--result-glow) 35%,transparent))}
+.crest-wings{fill:color-mix(in srgb,var(--result-wash) 45%,#10191c);stroke:var(--result-edge)}
+.crest-wings path+path{fill:none;stroke-width:.8;opacity:.6}
+.crest-ring{fill:#07171c;stroke-width:2.5;stroke:#dcc58b}
+.crest-gem{fill:var(--result-wash);stroke:var(--result-color);stroke-width:1.8}
+.crest-facets{stroke:var(--result-color);stroke-width:.8;opacity:.7}
+.crest-spark{stroke:#f0dfb0;stroke-width:1;opacity:.8}
+.crest-crack{display:none;stroke:#130a0b;stroke-width:4}
+.defeat .crest-crack{display:block}
+.defeat .crest-wings{fill:#321c1c}
+
+dialog.endgame-dialog{position:fixed;inset:0;margin:auto;width:min(820px,calc(100vw - 24px));max-width:none;max-height:calc(100dvh - 24px);padding:0;border:0;background:transparent;box-shadow:none;overflow:auto;color:#e8d6ae;scrollbar-width:thin}
+.endgame-dialog::backdrop{background:#02070bea;backdrop-filter:blur(7px)}
+.endgame-content{isolation:isolate;position:relative;padding:48px 50px 32px;min-height:570px;text-align:center;background:radial-gradient(ellipse at 50% 30%,color-mix(in srgb,var(--result-glow) 17%,transparent),transparent 61%)}
+.endgame-content::before{content:'';position:absolute;z-index:-1;inset:18px 0 0;background:linear-gradient(90deg,transparent,#b3955025,transparent);height:1px}
+.endgame-close{position:absolute;right:12px;top:12px;border-color:#ab986342;background:#09121888;color:#b8ac8c;font:24px Georgia}
+.endgame-eyebrow{font-size:9px;letter-spacing:3px;color:#999b8e;margin-bottom:18px}
+.endgame-dialog .outcome-crest{margin:0 auto -14px;animation:crest-arrive 650ms cubic-bezier(.15,.7,.2,1) both}
+.endgame-title{font:600 clamp(48px,8vw,82px)/1.15 var(--serif);letter-spacing:.12em;padding-left:.12em;margin:0;color:#ead5a5;text-shadow:0 2px 0 #48351e,0 4px 0 #090d10,0 0 40px color-mix(in srgb,var(--result-glow) 45%,transparent);animation:title-arrive 650ms ease-out both}
+.defeat .endgame-title{color:#e3b6a0;text-shadow:0 2px 0 #592c25,0 4px 0 #130d0e,0 0 40px #b62d3159}
+.endgame-rule{height:18px;display:flex;align-items:center;justify-content:center;gap:12px;margin:9px 0}
+.endgame-rule::before,.endgame-rule::after{content:'';height:1px;width:110px;background:linear-gradient(90deg,transparent,var(--result-edge))}
+.endgame-rule::after{transform:scaleX(-1)}
+.endgame-rule span{width:5px;height:5px;background:var(--result-edge);transform:rotate(45deg)}
+.endgame-summary{font-size:12px;color:#b0b9af;line-height:1.7;margin:0 0 22px}
+.defeat .endgame-summary{color:#c8aaa4}
+.endgame-item{display:flex;justify-content:center;align-items:center;gap:16px;margin:0 auto 27px;text-align:left}
+.endgame-item img{border:1px solid var(--result-edge);padding:3px;background:#09151a;box-shadow:0 0 25px color-mix(in srgb,var(--result-glow) 17%,transparent);width:64px;height:64px}
+.endgame-item-label{font-size:8px;letter-spacing:1.8px;color:#7f938d;display:block;margin-bottom:5px}
+.endgame-item strong{font:500 18px var(--serif);color:#e0d4b2;display:block;max-width:360px}
+.endgame-actions{display:flex;justify-content:center;gap:12px;margin-bottom:18px}
+.endgame-actions button{min-height:45px;min-width:168px}
+.endgame-continue.gold-button{background:linear-gradient(#193b42,#0b222c);border:1px solid #bda36c;color:#e2ca95;box-shadow:inset 0 0 0 2px #081a1f,0 0 22px #2898bc13;font-size:10px;letter-spacing:1.7px}
+.endgame-continue.gold-button:hover{background:linear-gradient(#28515b,#12323c);border-color:#ebd59e;box-shadow:0 0 20px #258eac24}
+.endgame-dialog button:focus-visible{outline-color:var(--result-color)}
+.defeat .endgame-continue.gold-button{background:linear-gradient(#432928,#271a1f)}
+.defeat .endgame-continue.gold-button:hover{background:linear-gradient(#5b322d,#362027)}
+.endgame-inspect{background:#0c171b80;border-color:#6f756346;color:#b3b59e}
+.endgame-share{font-size:10px;color:#9c9c83}
+@keyframes crest-arrive{from{opacity:0;transform:translateY(-20px) scale(.88)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes title-arrive{from{opacity:0;transform:translateY(12px);filter:blur(3px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}
+
+/* The completed state remains unmistakable after closing the reveal or reloading. */
+#game[data-status=won]{border-color:#7cc9c18f}
+#game[data-status=lost]{border-color:#b96d608f}
+#result-panel.result-panel{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px 24px;border:0;border-bottom:1px solid color-mix(in srgb,var(--result-edge) 42%,transparent);padding:19px 28px 23px;background:radial-gradient(ellipse at 50% 0,color-mix(in srgb,var(--result-glow) 19%,transparent),transparent 80%),#08171b}
+#result-panel .outcome-crest{width:105px;flex-shrink:0}
+#result-panel .result-copy{flex:1;min-width:200px}
+#result-panel #result-heading{font:600 35px/1.2 var(--serif);letter-spacing:4px;color:#e0c78d;text-shadow:0 0 23px color-mix(in srgb,var(--result-glow) 37%,transparent);margin:0 0 6px}
+#result-panel.defeat #result-heading{color:#e1a28e}
+#result-panel .result-copy p{color:#a9bab0;font-size:11px}
+#result-panel.defeat .result-copy p{color:#c5a59c}
+#result-panel .result-actions{width:auto;flex-wrap:wrap;gap:8px}
+#result-panel .result-actions button{min-height:40px}
+.result-inspect{color:#a9bfb0;font-size:10px}
+@media(max-width:760px){.endgame-content{padding:50px 24px 28px;min-height:530px}.endgame-title{font-size:64px}.endgame-eyebrow{font-size:8px;letter-spacing:2px}.endgame-dialog .outcome-crest{max-width:490px;margin-bottom:-8px}.endgame-summary{font-size:11px}.endgame-item strong{font-size:16px}#result-panel.result-panel{padding:16px 18px;gap:12px}#result-panel .outcome-crest{width:72px}#result-panel #result-heading{font-size:30px;letter-spacing:3px}#result-panel .result-actions{width:100%;justify-content:center}#result-panel .result-copy{min-width:160px}}
+@media(max-width:420px){.endgame-content{padding:50px 15px 24px;min-height:480px}.endgame-title{font-size:47px;letter-spacing:.07em;padding-left:.07em}.endgame-dialog .outcome-crest{margin-bottom:0}.endgame-eyebrow{font-size:7px;letter-spacing:1.6px}.endgame-summary{font-size:11px;margin-bottom:20px}.endgame-item{gap:12px;margin-bottom:24px}.endgame-item img{width:56px;height:56px}.endgame-item strong{font-size:14px;max-width:200px}.endgame-item-label{font-size:7px}.endgame-actions{gap:9px;flex-direction:column;margin:0 auto 18px;max-width:245px}.endgame-actions button{min-height:44px}.endgame-rule::before,.endgame-rule::after{width:75px}#result-panel .outcome-crest{width:58px}#result-panel #result-heading{font-size:26px}#result-panel .result-copy{min-width:140px}#result-panel .result-copy p{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.endgame-dialog *{animation:none!important;transition:none!important}}

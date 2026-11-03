@@ -1,7 +1,9 @@
-import { MAX_GUESSES, utcDate, millisecondsUntilReset, randomAnswerId, normalizeSearch, searchItems, getGuessRecipe, compareGuess, createPuzzle, puzzleStatus, makeGuess, useHint, serializePuzzle, restorePuzzle, dailyStats } from './game.js';
-import { buildCatalog, VERSIONS_URL } from './catalog.js';
+import { MAX_GUESSES, utcDate, millisecondsUntilReset, dailyAnswerId, randomAnswerId, normalizeSearch, searchItems, getGuessRecipe, compareGuess, createPuzzle, puzzleStatus, makeGuess, useHint, serializePuzzle, restorePuzzle, dailyStats } from './game.js';
+import { buildCatalog, getPlayableIds, VERSIONS_URL } from './catalog.js';
 import { initShopkeeper } from './keeper.js';
 import { initSpeechBubble } from './speech.js';
+import { initOutcomeDialog, outcomeCrest } from './outcome.js';
+import { initShopResize } from './shop-resize.js';
 
 const $ = selector => document.querySelector(selector);
 const escape = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
@@ -11,12 +13,19 @@ const storagePrefix = 'shopkeeperle:v1:';
 const keeper = initShopkeeper({scene: $('.keeper-scene'), image: $('img.keeper')});
 const speech = initSpeechBubble({button: $('#quote-button'), quote: $('#quote')});
 speech.setText($('#quote').textContent);
+initShopResize({panel:$('#purchase-panel'), grid:$('#item-grid')});
 let latestCatalog, catalog, state, daily, dailyCatalog;
 let mode = new URL(location.href).searchParams.get('mode') === 'unlimited' ? 'unlimited' : 'daily';
 let selectedId = null, filter = 'all', quoteIndex = 0, loadGeneration = 0;
 let storageWarning = false, refreshedAt = null, dailyUnavailable = false, pendingMode = null;
 const memorySaves = new Map();
 const catalogs = new Map();
+const outcome = initOutcomeDialog({
+  dialog: $('#outcome-dialog'),
+  onNext: startNextRecipe,
+  onShare: shareResult,
+  onDismiss: () => $('#result-heading')?.focus(),
+});
 
 function readSave(key) { if (memorySaves.has(key)) return memorySaves.get(key); try { return localStorage.getItem(storagePrefix + key); } catch { return null; } }
 function writeSave(key, value) {
@@ -49,7 +58,9 @@ async function loadDaily() {
   if (manifest.date !== date || !/^\d+\.\d+\.\d+(?:-[a-f0-9]+)?$/.test(manifest.snapshot || manifest.version)) throw new Error('Invalid daily manifest');
   const patch = await getJSON(`data/patches/${manifest.snapshot || manifest.version}.json`);
   if (patch.version !== manifest.version || !patch.answers.includes(manifest.answerId)) throw new Error('Invalid daily recipe');
-  daily = manifest; dailyCatalog = patch; dailyUnavailable = false;
+  // Older snapshots retain all clue components. Apply current eligibility to their answer too.
+  daily = { ...manifest, answerId: getPlayableIds(patch).includes(manifest.answerId) ? manifest.answerId : dailyAnswerId(patch, date) };
+  dailyCatalog = patch; dailyUnavailable = false;
 }
 
 async function startMode(nextMode, { newPuzzle = false } = {}) {
@@ -57,6 +68,7 @@ async function startMode(nextMode, { newPuzzle = false } = {}) {
   if (pendingMode === nextMode && !newPuzzle) return;
   const generation = ++loadGeneration;
   pendingMode = nextMode;
+  outcome.close({navigating: true});
   $('#game').setAttribute('aria-busy', 'true');
   if (state) saveState();
   try {
@@ -105,6 +117,7 @@ async function startMode(nextMode, { newPuzzle = false } = {}) {
 function render() {
   if (!state) return;
   const status = puzzleStatus(state), finished = status !== 'playing';
+  $('#game').dataset.status = status;
   const answer = catalog.items[state.answerId];
   const displayed = catalog.items[state.solvedBy || state.answerId];
   const lastId = state.guesses.at(-1), last = lastId && catalog.items[lastId];
@@ -176,17 +189,31 @@ function renderHistory() {
   }).join('');
 }
 function renderResult(status, displayed) {
-  const equivalents = catalog.answers.filter(id => compareGuess(catalog, state.answerId, id).correct);
+  const equivalents = getPlayableIds(catalog).filter(id => compareGuess(catalog, state.answerId, id).correct);
   const alternatives = equivalents.filter(id => id !== displayed.id).map(id => catalog.items[id].name);
-  $('#result-panel').innerHTML = `<div class="result-copy"><h2>${status === 'won' ? 'A fine purchase!' : 'One for the next build.'}</h2><p>${status === 'won' ? `Recipe solved in ${state.guesses.length} ${state.guesses.length === 1 ? 'guess' : 'guesses'}.` : `The recipe builds ${escape(displayed.name)}.`}${alternatives.length ? ` Also accepted: ${escape(alternatives.join(', '))}.` : ''}</p></div><div class="result-actions"><button class="secondary-button" id="share-button">Share result ↗</button><button class="gold-button" id="next-button">${mode === 'daily' ? 'Play unlimited' : 'Next recipe'} <span>→</span></button></div>`;
+  $('#result-panel').className = `result-panel ${status === 'won' ? 'victory' : 'defeat'}`;
+  $('#result-panel').innerHTML = `${outcomeCrest}<div class="result-copy"><h2 id="result-heading" tabindex="-1">${status === 'won' ? 'VICTORY' : 'DEFEAT'}</h2><p>${status === 'won' ? `Recipe solved in ${state.guesses.length} ${state.guesses.length === 1 ? 'guess' : 'guesses'}.` : `No guesses remaining. The item was ${escape(displayed.name)}.`}${alternatives.length ? ` Also accepted: ${escape(alternatives.join(', '))}.` : ''}</p><button class="text-button result-inspect" id="review-result-button">View result ↗</button></div><div class="result-actions"><button class="secondary-button" id="share-button">Share result ↗</button><button class="gold-button" id="next-button">${mode === 'daily' ? 'Play unlimited' : 'Next recipe'} <span>→</span></button></div>`;
   $('#share-button').onclick = shareResult;
-  $('#next-button').onclick = () => { startMode('unlimited', { newPuzzle: mode === 'unlimited' }); setQuote('Another customer with excellent taste!'); };
+  $('#next-button').onclick = startNextRecipe;
+  $('#review-result-button').onclick = showCompletedResult;
   setQuote(status === 'won' ? 'A fine purchase! You know your way around a shop.' : 'No refunds on guesses. But the next recipe is on me.');
+}
+
+function showCompletedResult() {
+  if (!state || pendingMode || puzzleStatus(state) === 'playing') return;
+  outcome.show({status:puzzleStatus(state), item:catalog.items[state.solvedBy || state.answerId], guesses:state.guesses.length, limit:MAX_GUESSES, mode});
+}
+async function startNextRecipe() {
+  await startMode('unlimited', {newPuzzle:true});
+  if (state && puzzleStatus(state) === 'playing') {
+    setQuote('Another customer with excellent taste!');
+    $('#item-search').focus();
+  }
 }
 
 $('#guess-form').addEventListener('submit', event => {
   event.preventDefault();
-  if (!state || puzzleStatus(state) !== 'playing') return;
+  if (!state || pendingMode || puzzleStatus(state) !== 'playing') return;
   if (!selectedId) {
     const exact = searchItems(catalog, $('#item-search').value, { exclude: state.guesses }).filter(item => normalizeSearch(item.name) === normalizeSearch($('#item-search').value));
     if (exact.length === 1) selectedId = exact[0].id;
@@ -195,6 +222,7 @@ $('#guess-form').addEventListener('submit', event => {
   try {
     state = makeGuess(state, selectedId, catalog); saveState(); cleanSearch(); render();
     keeper.react(puzzleStatus(state) === 'won' ? 'success' : 'miss');
+    if (puzzleStatus(state) !== 'playing') showCompletedResult();
     if (puzzleStatus(state) === 'playing') {
       setQuote(['Not quite. Have another look at those components.', 'Close the purse, open the mind.', 'A good build starts with the right ingredients.'][(state.guesses.length - 1) % 3]);
       $('#item-search').focus();
@@ -214,7 +242,7 @@ $('#item-search').addEventListener('keydown', event => {
 for (const button of $$('.filter-tabs button')) button.addEventListener('click', () => { filter = button.dataset.filter; selectedId = null; renderGrid(); });
 $('#daily-mode').onclick = () => startMode('daily');
 $('#unlimited-mode').onclick = () => startMode('unlimited');
-$('#hint-button').onclick = () => { state = useHint(state); saveState(); render(); };
+$('#hint-button').onclick = () => { if (!state || pendingMode || puzzleStatus(state) !== 'playing') return; state = useHint(state); saveState(); render(); };
 function chatWithKeeper() { quoteIndex = (quoteIndex + 1) % quotes.length; setQuote(quotes[quoteIndex]); keeper.react('chat'); }
 $('#quote-button').onclick = chatWithKeeper;
 // Give button clicks a brief acknowledgement. Guessing has its own stronger reaction.
@@ -223,13 +251,13 @@ document.addEventListener('click', event => {
   if (button && !button.disabled && !['guess-button', 'quote-button'].includes(button.id)) keeper.react('chat');
 });
 document.addEventListener('keydown', event => {
-  if (event.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName) && !$('#modal').open && state && puzzleStatus(state) === 'playing') { event.preventDefault(); $('#item-search').focus(); }
+  if (event.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName) && !$('dialog[open]') && state && !pendingMode && puzzleStatus(state) === 'playing') { event.preventDefault(); $('#item-search').focus(); }
 });
 
 function openModal(content) { $('#modal-content').innerHTML = content; $('#modal').showModal(); }
 $('.modal-close').onclick = () => $('#modal').close();
 $('#modal').addEventListener('click', event => { if (event.target === $('#modal')) { const bounds = $('#modal').getBoundingClientRect(); if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) $('#modal').close(); } });
-$('#help-button').onclick = () => openModal(`<span class="eyebrow">WELCOME TO THE SHOP</span><h2>Find the secret recipe.</h2><ol><li>Start with any item: search, select it, then <strong>buy your guess</strong>. Basic items work as clues too.</li><li>Its ingredients light up. <span class="green-text">Green: a direct ingredient.</span> <span class="orange-text">Orange: builds into, or is built from, an ingredient.</span> Grey: unrelated.</li><li>Use the colours to find the secret item in six guesses. The gold arrow tells you to aim for a higher or lower total price.</li></ol><p>For example, <strong>Long Sword</strong> turns orange when the secret recipe needs <strong>Serrated Dirk</strong>. Ingredient order doesn’t matter.</p><p><strong>Daily:</strong> the same recipe for everyone, refreshed at 00:00 UTC.<br><strong>Unlimited:</strong> a fresh recipe whenever you want.</p><p>Items with identical recipes and combine costs are all accepted. Progress stays in this browser.</p>`);
+$('#help-button').onclick = () => openModal(`<span class="eyebrow">WELCOME TO THE SHOP</span><h2>Find the secret recipe.</h2><ol><li>Pick a <strong>completed item or boots</strong>: search, select it, then <strong>buy your guess</strong>.</li><li>Its ingredients light up. <span class="green-text">Green: a direct ingredient.</span> <span class="orange-text">Orange: builds into, or is built from, an ingredient.</span> Grey: unrelated.</li><li>Find the secret item in six guesses. The gold arrow tells you to aim for a higher or lower total price.</li></ol><p>For example, a Long Sword <strong>inside your guessed recipe</strong> turns orange when the secret recipe needs Serrated Dirk. Ingredient order doesn’t matter.</p><p><strong>Daily:</strong> the same recipe for everyone, refreshed at 00:00 UTC.<br><strong>Unlimited:</strong> a fresh recipe whenever you want.</p><p>No intermediate, potion, or jungle-item guesses. Items with identical recipes and combine costs are all accepted. Progress stays in this browser.</p>`);
 $('#stats-button').onclick = () => {
   const records = new Map();
   try { for (let i = 0; i < localStorage.length; i++) { const key = localStorage.key(i); if (key.startsWith(storagePrefix + 'daily:')) { try { records.set(key, JSON.parse(localStorage.getItem(key))); } catch { /* Ignore a damaged individual record. */ } } } } catch { /* Storage may be blocked. */ }

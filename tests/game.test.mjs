@@ -5,10 +5,10 @@ import { MAX_GUESSES, utcDate, millisecondsUntilReset, dailyAnswerId, randomAnsw
 const catalog = {
   version: '16.22.1',
   answers: ['100', '101', '102', '103', '104', '105', '106', '107'],
-  items: Object.fromEntries(Array.from({ length: 8 }, (_, i) => [String(100 + i), {
+  items: Object.fromEntries([...Array.from({ length: 10 }, (_, i) => [String(i + 1), { id: String(i + 1), name: `Component ${i + 1}`, recipe: [], gold: { total: 100, combine: 100 }, tags: [] }]), ...Array.from({ length: 8 }, (_, i) => [String(100 + i), {
     id: String(100 + i), name: ['Infinity Edge', 'Rabadon’s Deathcap', 'Kraken Slayer', 'Serylda’s Grudge', 'Warmog’s Armor', 'Morellonomicon', 'Hextech Rocketbelt', 'Maw of Malmortius'][i],
     recipe: i === 0 ? ['1', '1', '2'] : i === 1 ? ['1', '2', '2'] : [String(i + 3)], gold: { total: 3000 + i * 100, combine: 500 },
-  }])),
+  }])]),
 };
 
 test('UTC date and reset are independent of a player timezone', () => {
@@ -94,14 +94,16 @@ test('crafting cycles terminate and leave unrelated components grey', () => {
   assert.deepEqual(scoreRecipeComponents(cycleProbe, '9010', '9014'), ['orange']);
 });
 
-test('basic items are searchable, valid guesses, and survive save restore', () => {
-  assert.equal(searchItems(craftingCatalog, 'long sword')[0].id, '1036');
+test('intermediates and basic components cannot be selected, guessed or restored', () => {
+  assert.deepEqual(searchItems(craftingCatalog, 'long sword'), []);
+  assert.deepEqual(searchItems(craftingCatalog, 'serrated dirk'), []);
   const state = createPuzzle({ catalog: craftingCatalog, answerId: '3814', date: '2026-11-03' });
-  const next = makeGuess(state, '1036', craftingCatalog);
-  assert.deepEqual(next.guesses, ['1036']);
-  assert.deepEqual(restorePuzzle(serializePuzzle(next), craftingCatalog), next);
+  assert.throws(() => makeGuess(state, '1036', craftingCatalog), /completed item or boots/);
+  assert.throws(() => makeGuess(state, '3134', craftingCatalog), /completed item or boots/);
+  assert.equal(restorePuzzle({ ...state, guesses: ['1036'] }, craftingCatalog), null);
+  assert.equal(restorePuzzle({ ...state, answerId: '3134' }, craftingCatalog), null);
   assert.throws(() => createPuzzle({ catalog: craftingCatalog, answerId: '1036' }), /Unknown answer/);
-  assert.throws(() => makeGuess(state, 'missing', craftingCatalog), /Choose an item/);
+  assert.throws(() => makeGuess(state, 'missing', craftingCatalog), /Choose a completed item/);
 });
 
 test('items with the same visible recipe and combine cost are accepted fairly', () => {

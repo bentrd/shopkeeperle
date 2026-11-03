@@ -1,0 +1,25 @@
+/* Only the item viewport grows; a short filtered list keeps its natural height. */
+.purchase-panel { --shop-grid-default: 112px; }
+.purchase-panel .item-grid { max-height: var(--shop-grid-height, var(--shop-grid-default)); }
+.shop-resize-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 30px;
+  margin: 8px 0 -3px;
+  padding: 7px 10px;
+  border-top: 1px solid #a58b4b26;
+  color: #9b957a;
+  cursor: ns-resize;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.shop-resize-grip { width: 27px; height: 3px; border-top: 1px solid #b79b5b99; border-bottom: 1px solid #b79b5b66; }
+.shop-resize-label { font-size: 8px; letter-spacing: .7px; line-height: 1; }
+.shop-resize-handle:focus-visible { outline: 1px solid #d7ba78; outline-offset: 2px; color: #dec58a; }
+.shop-is-resizing { user-select: none; -webkit-user-select: none; }
+.shop-is-resizing .shop-resize-handle { color: #dec58a; border-top-color: #b79b5b66; }
+@media (max-width: 760px) { .purchase-panel { --shop-grid-default: 98px; } }
+@media (max-width: 420px) { .purchase-panel { --shop-grid-default: 94px; } }

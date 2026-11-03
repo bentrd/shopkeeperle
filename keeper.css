@@ -12,7 +12,7 @@
   pointer-events: none;
   z-index: 1;
 }
-.keeper-pose { position: relative; width: 100%; height: 100%; transform-origin: 50% 100%; animation: keeper-breathe 5.8s ease-in-out infinite; }
+.keeper-pose { position: relative; width: 100%; height: 100%; transform-origin: 50% 100%; animation: keeper-breathe 4.8s ease-in-out infinite; }
 .keeper-rig .keeper-body, .keeper-rig .keeper-head { position: absolute; inset: 0; display: block; width: 100%; height: 100%; max-width: none; object-fit: contain; filter: none; }
 /* A precisely shared head contour avoids a second visible face underneath. */
 .keeper-body {
@@ -23,15 +23,25 @@
 .keeper-head {
   clip-path: polygon(33.38% 24.98%,37.38% 22.39%,47.17% 21.79%,53.66% 22.59%,57.66% 24.68%,57.10% 27.56%,60.55% 30.65%,61.66% 33.63%,60% 35.72%,57.24% 37.21%,56.28% 41.79%,53.52% 45.37%,48.97% 47.96%,44.55% 49.15%,43.72% 47.26%,48.14% 44.38%,50.48% 39.90%,49.66% 37.01%,44.41% 36.82%,40.83% 38.01%,36.55% 37.11%,32.55% 35.02%,30.90% 31.84%,28.28% 32.44%,25.52% 35.22%,22.21% 38.71%,18.90% 41.09%,16.97% 40.40%,18.07% 36.52%,20.14% 32.74%,24.69% 29.85%,30.07% 28.36%,32.41% 26.37%);
   transform-origin: 46% 38%;
-  animation: keeper-head-idle 9s ease-in-out infinite;
+  animation: keeper-head-idle 5.4s ease-in-out infinite;
 }
-/* Idle stays almost still; button reactions briefly add a friendly nod. */
+/* A small breath and weight shift keep the feet anchored while the upper body moves. */
 .keeper-rig[data-reaction=success] .keeper-head { animation: keeper-nod 700ms ease-in-out; }
 .keeper-rig[data-reaction=miss] .keeper-head { animation: keeper-shake 650ms ease-in-out; }
 .keeper-rig[data-reaction=chat] .keeper-head,
 .keeper-rig[data-reaction=ack] .keeper-head { animation: keeper-chat 650ms ease-in-out; }
-@keyframes keeper-breathe { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(1.0025); } }
-@keyframes keeper-head-idle { 0%,35%,65%,100% { transform: rotate(0); } 47% { transform: rotate(-.45deg); } 55% { transform: rotate(.3deg); } }
+@keyframes keeper-breathe {
+  0%,100% { transform: scaleY(1) rotate(-.25deg); }
+  25% { transform: scaleY(1.005) rotate(.1deg); }
+  50% { transform: scaleY(1.009) rotate(.4deg); }
+  75% { transform: scaleY(1.005) rotate(.05deg); }
+}
+@keyframes keeper-head-idle {
+  0%,70%,100% { transform: rotate(0); }
+  22% { transform: rotate(-.7deg); }
+  40% { transform: rotate(1.1deg); }
+  54% { transform: rotate(-.35deg); }
+}
 @keyframes keeper-nod { 0%,100% { transform: rotate(0); } 25%,65% { transform: translateY(.6px) rotate(.8deg); } 45%,80% { transform: translateY(-.3px) rotate(-.5deg); } }
 @keyframes keeper-shake { 0%,100% { transform: rotate(0); } 20%,60% { transform: rotate(-.9deg); } 40%,80% { transform: rotate(.9deg); } }
 @keyframes keeper-chat { 0%,100% { transform: rotate(0); } 30% { transform: translateY(.4px) rotate(-.8deg); } 65% { transform: rotate(.4deg); } }
