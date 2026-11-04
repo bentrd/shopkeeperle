@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no">
   <meta name="theme-color" content="#081416">
   <meta name="description" content="Guess a League item. Read its green ingredient and orange crafting clues. Find the mystery build in six tries. Daily and unlimited play.">
   <meta property="og:title" content="Shopkeeperle — Know your build?">
@@ -82,7 +82,7 @@
 
       <section class="purchase-panel" aria-label="Choose an item" id="purchase-panel">
         <div class="purchase-heading"><h2><span class="tiny-diamond"></span> Make your purchase</h2><span id="item-count">COMPLETED ITEMS + BOOTS</span></div>
-        <form id="guess-form" class="guess-form" autocomplete="off"><div class="search-wrap"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><label for="item-search" class="sr-only">Search items</label><input id="item-search" type="search" placeholder="Search for an item…" maxlength="80" aria-describedby="selection-label"><kbd aria-hidden="true">/</kbd></div><button class="gold-button" id="guess-button" disabled type="submit">Buy guess <span aria-hidden="true">→</span></button></form>
+        <form id="guess-form" class="guess-form" autocomplete="off"><div class="search-wrap"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><label for="item-search" class="sr-only">Search items</label><input id="item-search" type="search" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Search for an item…" maxlength="80" aria-describedby="selection-label"><kbd aria-hidden="true">/</kbd></div><button class="gold-button" id="guess-button" disabled type="submit">Buy guess <span aria-hidden="true">→</span></button></form>
         <div class="selection-line"><span id="selection-label">Select an item below, then buy your guess.</span><div class="filter-tabs" aria-label="Filter item shop"><button data-filter="all" aria-pressed="true">All</button><button data-filter="Damage" aria-pressed="false">Attack</button><button data-filter="SpellDamage" aria-pressed="false">Magic</button><button data-filter="defense" aria-pressed="false">Defence</button></div></div>
         <div id="item-grid" class="item-grid" aria-label="Available items"></div>
         <p class="form-message" id="form-message" role="status" aria-live="polite"></p>

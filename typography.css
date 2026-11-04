@@ -27,7 +27,8 @@ body { font-size: 15px; line-height: 1.55; }
 .purchase-heading { gap: 8px 15px; flex-wrap: wrap; align-items: baseline; }
 .purchase-heading h2 { font-size: 15px; }
 .purchase-heading > span { font-size: 10px; letter-spacing: .8px; }
-.search-wrap input { font-size: 14px; }
+/* Keep focused search fields above iOS Safari's automatic zoom threshold. */
+.search-wrap input { font-size: 16px; }
 .search-wrap kbd { font-size: 12px; }
 .gold-button, .secondary-button { font-size: 11.5px; letter-spacing: 1px; }
 .gold-button { gap: 18px; }
@@ -98,7 +99,6 @@ footer p { color: #91a69b; }
   .board-bottom .text-button { font-size: 11px; }
   .purchase-heading h2 { font-size: 14px; }
   .purchase-heading > span { font-size: 10px; }
-  .search-wrap input { font-size: 14px; }
   .gold-button { min-width: 108px; padding: 10px 12px; gap: 10px; font-size: 11px; }
   .selection-line, .filter-tabs button { font-size: 12px; }
   .guess-row, .guess-row .guess-name { font-size: 12px; }
@@ -131,4 +131,23 @@ footer p { color: #91a69b; }
   .under-shop > span { max-width: 100%; }
   .history-heading > span { font-size: 9px; }
   .endgame-item strong { max-width: 180px; overflow-wrap: anywhere; }
+}
+
+/* Stable controls and comfortable targets for touch play, including landscape. */
+@media (pointer: coarse) {
+  button, .gold-button, .text-button { min-width: 44px; min-height: 44px; }
+  .icon-button, .modal-close, .share-close, .endgame-close { width: 44px; height: 44px; }
+  .mode-switch button { min-height: 44px; }
+  .search-wrap, .guess-form > .gold-button { min-height: 48px; }
+  .purchase-panel { --shop-grid-default: 118px; }
+  .selection-line { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  #selection-label { min-height: 2.9em; }
+  .filter-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin-left: 0; }
+  .filter-tabs button { padding: 8px 4px; }
+  .item-grid { grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); }
+  .shop-item { min-height: 44px; }
+  .shop-item:hover, .speech-bubble:hover { transform: none; }
+  .shop-resize-handle { min-height: 44px; }
+  .form-message { min-height: 2.9em; }
+  #modal-content h2 { margin-right: 40px; }
 }

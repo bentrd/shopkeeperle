@@ -23,3 +23,4 @@ dialog.share-dialog{width:min(520px,calc(100vw - 24px));max-width:520px;max-heig
 @media(max-width:760px){.brand .brand-emblem{width:34px;height:34px}}
 @media(max-width:420px){dialog.share-dialog{padding:24px 17px}.share-dialog h2{font-size:22px}.share-dialog>.eyebrow{font-size:8px}.share-formats button{font-size:11px;padding:8px 4px}.share-formats button small{font-size:9px;margin-left:4px}.share-preview-wrap{padding:9px}.share-image-actions .gold-button{font-size:10px}.share-hint{font-size:11px}}
 @media(max-width:420px){.share-copy-actions .share-open{flex-basis:100%;text-align:center;margin:3px 0 0}.share-copy-actions button{min-height:40px}}
+@media(pointer:coarse){.share-formats button,.share-image-actions .gold-button,.share-copy-actions button,.share-copy-actions .share-open{min-height:44px}.share-copy-actions .share-open{display:flex;align-items:center;justify-content:center}.share-manual-copy{font-size:16px}.share-dialog h2{margin-right:40px}}

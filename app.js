@@ -7,7 +7,25 @@ import { initShopResize } from './shop-resize.js';
 import { buildShareModel } from './share-model.js';
 import { initSharing } from './sharing.js';
 
+// Safari also exposes native pinch zoom through gesture events.
+for (const type of ['gesturestart', 'gesturechange']) {
+  document.addEventListener(type, event => event.preventDefault(), { passive: false });
+}
+
 const $ = selector => document.querySelector(selector);
+let touchInteraction = matchMedia('(pointer: coarse)').matches;
+document.addEventListener('pointerdown', event => { touchInteraction = event.pointerType !== 'mouse'; }, { capture: true, passive: true });
+document.addEventListener('keydown', event => {
+  // Typing on the on-screen keyboard is still part of a touch interaction.
+  if (!['INPUT', 'TEXTAREA'].includes(event.target.tagName) || ['Tab', 'ArrowDown', 'ArrowUp', 'Escape'].includes(event.key) || event.ctrlKey || event.metaKey) touchInteraction = false;
+}, { capture: true });
+function dismissTouchKeyboard() {
+  if (touchInteraction && document.activeElement === $('#item-search')) $('#item-search').blur();
+}
+function restoreSearchFocus() {
+  if (touchInteraction) dismissTouchKeyboard();
+  else $('#item-search').focus({ preventScroll: true });
+}
 const escape = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 const quotes = ['What are we building today?', 'A sharp eye is worth more than a full purse.', 'Take your time. The Rift can wait.', 'Fine wares. Finer instincts.', 'Now that has the makings of a good build.', 'A little shop knowledge goes a long way.'];
 const base = new URL('./', location.href);
@@ -26,11 +44,11 @@ const outcome = initOutcomeDialog({
   dialog: $('#outcome-dialog'),
   onNext: startNextRecipe,
   onShare: shareResult,
-  onDismiss: () => $('#result-heading')?.focus(),
+  onDismiss: () => $('#result-heading')?.focus({ preventScroll: true }),
 });
 const sharing = initSharing({
   dialog: $('#share-dialog'),
-  onDismiss: () => ($('#result-heading') || $('#item-search'))?.focus(),
+  onDismiss: () => { if ($('#result-heading')) $('#result-heading').focus({ preventScroll: true }); else restoreSearchFocus(); },
 });
 
 function readSave(key) { if (memorySaves.has(key)) return memorySaves.get(key); try { return localStorage.getItem(storagePrefix + key); } catch { return null; } }
@@ -186,6 +204,7 @@ function selectItem(id) {
   $('#guess-button').disabled = false;
   $('#selection-label').textContent = `${catalog.items[id].name} · ${catalog.items[id].gold.total.toLocaleString('en-US')} gold`;
   $('#form-message').textContent = '';
+  dismissTouchKeyboard();
 }
 function renderHistory() {
   $('#history').innerHTML = state.guesses.map((id, index) => {
@@ -214,7 +233,7 @@ async function startNextRecipe() {
   await startMode('unlimited', {newPuzzle:true});
   if (state && puzzleStatus(state) === 'playing') {
     setQuote('Another customer with excellent taste!');
-    $('#item-search').focus();
+    restoreSearchFocus();
   }
 }
 
@@ -226,19 +245,21 @@ $('#guess-form').addEventListener('submit', event => {
     if (exact.length === 1) selectedId = exact[0].id;
   }
   if (!selectedId) return;
+  dismissTouchKeyboard();
   try {
     state = makeGuess(state, selectedId, catalog); saveState(); cleanSearch(); render();
     keeper.react(puzzleStatus(state) === 'won' ? 'success' : 'miss');
     if (puzzleStatus(state) !== 'playing') showCompletedResult();
     if (puzzleStatus(state) === 'playing') {
       setQuote(['Not quite. Have another look at those components.', 'Close the purse, open the mind.', 'A good build starts with the right ingredients.'][(state.guesses.length - 1) % 3]);
-      $('#item-search').focus();
+      restoreSearchFocus();
       $('#form-message').textContent = 'Not that one. Use the coloured ingredients to try another build.';
     }
   } catch (error) { $('#form-message').textContent = error.message; }
 });
-$('#item-search').addEventListener('input', () => { selectedId = null; renderGrid(); });
+$('#item-search').addEventListener('input', () => { selectedId = null; $('#form-message').textContent = ''; renderGrid(); $('#item-grid').scrollTop = 0; });
 $('#item-search').addEventListener('keydown', event => {
+  if (event.isComposing || !state || pendingMode) return;
   if (event.key === 'Enter' && !selectedId) {
     const exact = searchItems(catalog, $('#item-search').value, {exclude: state.guesses}).filter(item => normalizeSearch(item.name) === normalizeSearch($('#item-search').value));
     if (exact.length === 1) { event.preventDefault(); selectItem(exact[0].id); $('#guess-form').requestSubmit(); }
@@ -246,7 +267,7 @@ $('#item-search').addEventListener('keydown', event => {
   if (event.key === 'ArrowDown') { event.preventDefault(); $('#item-grid button')?.focus(); }
   if (event.key === 'Escape') { cleanSearch(); renderGrid(); }
 });
-for (const button of $$('.filter-tabs button')) button.addEventListener('click', () => { filter = button.dataset.filter; selectedId = null; renderGrid(); });
+for (const button of $$('.filter-tabs button')) button.addEventListener('click', () => { filter = button.dataset.filter; selectedId = null; $('#form-message').textContent = ''; dismissTouchKeyboard(); renderGrid(); $('#item-grid').scrollTop = 0; });
 $('#daily-mode').onclick = () => startMode('daily');
 $('#unlimited-mode').onclick = () => startMode('unlimited');
 $('#hint-button').onclick = () => { if (!state || pendingMode || puzzleStatus(state) !== 'playing') return; state = useHint(state); saveState(); render(); };
@@ -261,7 +282,7 @@ document.addEventListener('keydown', event => {
   if (event.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName) && !$('dialog[open]') && state && !pendingMode && puzzleStatus(state) === 'playing') { event.preventDefault(); $('#item-search').focus(); }
 });
 
-function openModal(content) { $('#modal-content').innerHTML = content; $('#modal').showModal(); }
+function openModal(content) { dismissTouchKeyboard(); $('#modal-content').innerHTML = content; $('#modal').showModal(); }
 $('.modal-close').onclick = () => $('#modal').close();
 $('#modal').addEventListener('click', event => { if (event.target === $('#modal')) { const bounds = $('#modal').getBoundingClientRect(); if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) $('#modal').close(); } });
 $('#help-button').onclick = () => openModal(`<span class="eyebrow">WELCOME TO THE SHOP</span><h2>Find the secret recipe.</h2><ol><li>Pick a <strong>completed item or boots</strong>: search, select it, then <strong>buy your guess</strong>.</li><li>Its ingredients light up. <span class="green-text">Green: a direct ingredient.</span> <span class="orange-text">Orange: builds into, or is built from, an ingredient.</span> Grey: unrelated.</li><li>Find the secret item in six guesses. The gold arrow tells you to aim for a higher or lower total price.</li></ol><p>For example, a Long Sword <strong>inside your guessed recipe</strong> turns orange when the secret recipe needs Serrated Dirk. Ingredient order doesn’t matter.</p><p><strong>Daily:</strong> the same recipe for everyone, refreshed at 00:00 UTC.<br><strong>Unlimited:</strong> a fresh recipe whenever you want.</p><p>No intermediate, potion, or jungle-item guesses. Items with identical recipes and combine costs are all accepted. Progress stays in this browser.</p>`);
