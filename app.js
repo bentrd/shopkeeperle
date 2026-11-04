@@ -252,7 +252,6 @@ $('#guess-form').addEventListener('submit', event => {
     if (puzzleStatus(state) !== 'playing') showCompletedResult();
     if (puzzleStatus(state) === 'playing') {
       setQuote(['Not quite. Have another look at those components.', 'Close the purse, open the mind.', 'A good build starts with the right ingredients.'][(state.guesses.length - 1) % 3]);
-      restoreSearchFocus();
       $('#form-message').textContent = 'Not that one. Use the coloured ingredients to try another build.';
     }
   } catch (error) { $('#form-message').textContent = error.message; }
